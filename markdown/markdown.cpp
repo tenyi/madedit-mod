@@ -269,8 +269,8 @@ optional<TokenPtr> parseBlockQuote(CTokenGroupIter& i, CTokenGroupIter end) {
 						i=ii;
 						break;
 					} else {
-						const std::wstring& line(*(*ii)->text());
-						if (xpressive::regex_match(line, m, continuationExpression)) {
+						const std::wstring& nextLine(*(*ii)->text());
+						if (xpressive::regex_match(nextLine, m, continuationExpression)) {
 							if (m[1].matched && m[1].length()>0) {
 								i=++ii;
 								subTokens.push_back(TokenPtr(new markdown::token::BlankLine));
@@ -279,8 +279,8 @@ optional<TokenPtr> parseBlockQuote(CTokenGroupIter& i, CTokenGroupIter end) {
 						} else break;
 					}
 				} else {
-					const std::wstring& line(*(*i)->text());
-					if (xpressive::regex_match(line, m, continuationExpression)) {
+					const std::wstring& curLine(*(*i)->text());
+					if (xpressive::regex_match(curLine, m, continuationExpression)) {
 						assert(m[2].matched);
 						if (!isBlankLine(m[2])) subTokens.push_back(TokenPtr(new markdown::token::RawText(m[2])));
 						else subTokens.push_back(TokenPtr(new markdown::token::BlankLine(m[2])));
@@ -338,9 +338,9 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 		if (type!=cNone) {
 			CTokenGroupIter originalI=i;
 			size_t itemCount=1;
-			std::wostringstream sub;
-			sub << L"^" << std::wstring(indent, (wchar_t)' ') << L" +(([*+-])|([0-9]+\\.)) +.*$";
-			startSublistExpression=xpressive::wsregex::compile(sub.str());
+			std::wostringstream subPattern;
+			subPattern << L"^" << std::wstring(indent, (wchar_t)' ') << L" +(([*+-])|([0-9]+\\.)) +.*$";
+			startSublistExpression=xpressive::wsregex::compile(subPattern.str());
 
 			// There are several options for the next line. It's another item in
 			// this list (in which case this one is done); it's a continuation
@@ -375,8 +375,8 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 						i=ii;
 						nextItem=cEndOfList;
 					} else if ((*ii)->text()) {
-						const std::wstring& line(*(*ii)->text());
-						if (xpressive::regex_match(line, startSublistExpression)) {
+						const std::wstring& lineAfterBlank(*(*ii)->text());
+						if (xpressive::regex_match(lineAfterBlank, startSublistExpression)) {
 							setParagraphMode=true;
 							++itemCount;
 							i=ii;
@@ -384,17 +384,17 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 							assert(p);
 							subItemTokens.push_back(*p);
 							continue;
-						} else if (xpressive::regex_match(line, m, nextItemExpression)) {
+						} else if (xpressive::regex_match(lineAfterBlank, m, nextItemExpression)) {
 							setParagraphMode=true;
 							i=ii;
 							nextItem=cAnotherItem;
-						} else if (xpressive::regex_match(line, m, continuedAfterBlankLineExpression)) {
+						} else if (xpressive::regex_match(lineAfterBlank, m, continuedAfterBlankLineExpression)) {
 							assert(m[1].matched);
 							subItemTokens.push_back(TokenPtr(new markdown::token::BlankLine()));
 							subItemTokens.push_back(TokenPtr(new markdown::token::RawText(m[1])));
 							i=++ii;
 							continue;
-						} else if (xpressive::regex_match(line, m, codeBlockAfterBlankLineExpression)) {
+						} else if (xpressive::regex_match(lineAfterBlank, m, codeBlockAfterBlankLineExpression)) {
 							setParagraphMode=true;
 							++itemCount;
 							assert(m[1].matched);
@@ -412,8 +412,8 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 										ii=iii;
 									} else break;
 								} else if ((*ii)->text()) {
-									const std::wstring& line(*(*ii)->text());
-									if (xpressive::regex_match(line, m, codeBlockAfterBlankLineExpression)) {
+									const std::wstring& codeLine(*(*ii)->text());
+									if (xpressive::regex_match(codeLine, m, codeBlockAfterBlankLineExpression)) {
 										codeBlock+=m[1]+(wchar_t)'\n';
 									} else break;
 								} else break;
@@ -428,23 +428,23 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 						}
 					} else break;
 				} else if ((*i)->text()) {
-					const std::wstring& line(*(*i)->text());
-					if (xpressive::regex_match(line, startSublistExpression)) {
+					const std::wstring& curLine(*(*i)->text());
+					if (xpressive::regex_match(curLine, startSublistExpression)) {
 						++itemCount;
 						optional<TokenPtr> p=parseListBlock(i, end, true);
 						assert(p);
 						subItemTokens.push_back(*p);
 						continue;
-					} else if (xpressive::regex_match(line, m, nextItemExpression)) {
+					} else if (xpressive::regex_match(curLine, m, nextItemExpression)) {
 						nextItem=cAnotherItem;
 					} else {
-						if (xpressive::regex_match(line, m, cUnorderedListExpression)
-							|| xpressive::regex_match(line, m, cOrderedListExpression))
+						if (xpressive::regex_match(curLine, m, cUnorderedListExpression)
+							|| xpressive::regex_match(curLine, m, cOrderedListExpression))
 						{
 							// Belongs to the parent list
 							nextItem=cEndOfList;
 						} else {
-							xpressive::regex_match(line, m, cContinuedItemExpression);
+							xpressive::regex_match(curLine, m, cContinuedItemExpression);
 							assert(m[1].matched);
 							subItemTokens.push_back(TokenPtr(new markdown::token::RawText(m[1])));
 							++i;
@@ -556,8 +556,8 @@ optional<TokenPtr> parseHeader(CTokenGroupIter& i, CTokenGroupIter end) {
 		++ii;
 		if (ii!=end && !(*ii)->isBlankLine() && (*ii)->text() && (*ii)->canContainMarkup()) {
 			static const xpressive::wsregex cUnderlinedHeaders=xpressive::wsregex::compile(L"^([-=])\\1*$");
-			const std::wstring& line=*(*ii)->text();
-			if (xpressive::regex_match(line, m, cUnderlinedHeaders)) {
+			const std::wstring& nextLine=*(*ii)->text();
+			if (xpressive::regex_match(nextLine, m, cUnderlinedHeaders)) {
 				wchar_t typeChar=std::wstring(m[1])[0];
 				TokenPtr p=TokenPtr(new markdown::token::Header((typeChar==(wchar_t)'='
 					? 1 : 2), *(*i)->text()));

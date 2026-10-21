@@ -122,7 +122,8 @@
       <DisableSpecificWarnings>4068;4018;4820;4514;4521;4505;4522;4706</DisableSpecificWarnings>
       <CompileAs>CompileAsCpp</CompileAs>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zm200  /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zm200  /Zc:__cplusplus /external:I "$(BOOST_ROOT)" /external:I ..\..\python\include /external:I ..\..\minipython\Include /external:I ..\..\minipython\PC %(AdditionalOptions)</AdditionalOptions>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -186,7 +187,8 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zm200  /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zm200  /Zc:__cplusplus /external:I "$(BOOST_ROOT)" /external:I ..\..\python\include /external:I ..\..\minipython\Include /external:I ..\..\minipython\PC %(AdditionalOptions)</AdditionalOptions>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

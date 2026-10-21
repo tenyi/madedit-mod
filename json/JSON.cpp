@@ -113,13 +113,13 @@ namespace JSON
 
 		// Common case first
 		if (c >= 0x20 && c != '"' && c != '\\' && c < 0x7f)
-			result += c;
+			result += static_cast<char>(c);
 		else
 		{
 			if (c == '"' || c == '\\')
 			{
 				result += '\\';
-				result += c;
+				result += static_cast<char>(c);
 			}
 			else if (c == 0x08) // BS
 			{
@@ -148,7 +148,7 @@ namespace JSON
 			}
 			else
 			{
-				result += c;
+				result += static_cast<char>(c);
 			}
 		}
 	}
@@ -294,7 +294,7 @@ namespace JSON
 		if (iter == properties.end())
 			return false;
 
-		value = (*iter).second->getAsNumber();
+		value = static_cast<long>((*iter).second->getAsNumber());
 		return true;
 	}
 
@@ -304,7 +304,7 @@ namespace JSON
 		if (iter == properties.end())
 			return false;
 
-		value = (*iter).second->getAsNumber();
+		value = static_cast<unsigned long>((*iter).second->getAsNumber());
 		return true;
 	}
 
@@ -314,7 +314,7 @@ namespace JSON
 		if (iter == properties.end())
 			return false;
 
-		value = (*iter).second->getAsNumber();
+		value = static_cast<int>((*iter).second->getAsNumber());
 		return true;
 	}
 
@@ -673,7 +673,9 @@ namespace JSON
 			else
 				throw ParserException("Illegal hex digit", line, column);
 
-			res += val;
+			// 註：val 是 \uXXXX 的 16 位元碼點，這裡沿用原本行為只保留低 8 位元，
+			// 明確轉型只是為了消除 MSVC C4244 警告，並未改成 UTF-8 編碼
+			res += static_cast<char>(val);
 			}
 		}
 		else
