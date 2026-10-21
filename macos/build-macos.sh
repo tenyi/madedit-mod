@@ -8,13 +8,15 @@
 #   --relocatable     把 wxWidgets / gettext 的動態函式庫打包進
 #                     MadEdit.app/Contents/Frameworks，讓 .app 可以複製到
 #                     別台機器執行（預設是連結到 Homebrew 的版本）
-#   --debug           產生含除錯資訊與 assert 的版本（預設為 release）
+#   --dmg             另外產生可發佈的 .dmg（隱含 --relocatable）
+#   --debug          產生含除錯資訊與 assert 的版本（預設為 release）
 #   --prefix=PATH     安裝前綴（預設 /opt/local/madedit）
 #   --build-dir=PATH  建置目錄（預設 /opt/local/madedit-build，
 #                     沒有 /opt/local 就改用 ~/local/madedit-build）
 #
 # 產物：
 #   $BUILD_DIR/MadEdit.app   可直接拖進 Applications 的 app bundle
+#   $BUILD_DIR/MadEdit-Mod-<版本>-macos-<架構>.dmg   （有 --dmg 時）
 
 set -e
 
@@ -29,11 +31,13 @@ SRC_DIR=$(cd "$(dirname "$0")/.." && pwd)
 BUILD_DIR=""
 PREFIX="/opt/local/madedit"
 RELOCATABLE=no
+DMG=no
 DEBUG=no
 
 for arg in "$@"; do
     case "$arg" in
         --relocatable)   RELOCATABLE=yes ;;
+        --dmg)           DMG=yes; RELOCATABLE=yes ;;
         --debug)         DEBUG=yes ;;
         --prefix=*)      PREFIX="${arg#--prefix=}" ;;
         --build-dir=*)   BUILD_DIR="${arg#--build-dir=}" ;;
@@ -313,6 +317,22 @@ fi
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || \
     echo "（簽章失敗，仍可嘗試執行）"
 
+# --- 8. DMG（選用）--------------------------------------------------------
+# 映像檔裡放 MadEdit.app 和指向 /Applications 的捷徑，打開後直接拖過去即可安裝。
+if [ "$DMG" = yes ]; then
+    echo "== 產生 DMG =="
+    DMG_FILE="$BUILD_DIR/MadEdit-Mod-$VERSION-macos-$(uname -m).dmg"
+    STAGE="$BUILD_DIR/dmg-stage"
+    rm -rf "$STAGE" "$DMG_FILE"
+    mkdir -p "$STAGE"
+    ditto "$APP" "$STAGE/MadEdit.app"
+    ln -s /Applications "$STAGE/Applications"
+    hdiutil create -volname "MadEdit-Mod $VERSION" -srcfolder "$STAGE" \
+        -fs HFS+ -format UDZO -imagekey zlib-level=9 "$DMG_FILE" -quiet
+    rm -rf "$STAGE"
+fi
+
 echo
 echo "建置完成： $APP"
+[ "$DMG" = yes ] && echo "DMG：      $DMG_FILE"
 echo "把整個 MadEdit.app 拖進 Applications 資料夾即可使用。"
