@@ -204,7 +204,7 @@ macos/build-macos.sh produces MadEdit.app with this layout:
     MadEdit.app/Contents/Resources/syntax/          syntax highlighting
     MadEdit.app/Contents/Resources/scripts/         MadPython macros
     MadEdit.app/Contents/Resources/Dictionaries/    hunspell dictionaries
-    MadEdit.app/Contents/Resources/share/locale/    translations
+    MadEdit.app/Contents/Resources/locale/          translations
     MadEdit.app/Contents/Resources/MadEdit.icns     the icon
     MadEdit.app/Contents/Info.plist
 
@@ -213,9 +213,10 @@ macOS the program redirects that lookup to Contents/Resources when it detects
 that it is running from a bundle.  Drag the whole MadEdit.app into the
 Applications folder and it is ready to use.
 
-The translations are the one exception: they go into Resources/share/locale/
-instead of Resources/locale/, because that is where wxWidgets 3.3 looks for
-them.  See "wxWidgets 3.3 notes" below.
+The translations live in Resources/locale/ like the other data files: the
+program hands that directory to wxLocale::AddCatalogLookupPathPrefix().  Do
+not move them to Resources/share/locale/, wxWidgets does not search there on
+macOS.  See "wxWidgets 3.3 notes" below.
 
 By default the executable links against the wxWidgets and gettext libraries
 in Homebrew, so the .app only runs on a machine that has the same libraries
