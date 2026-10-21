@@ -1,3 +1,28 @@
+madedit-mod (0.4.21-1) stable; urgency=low
+  1.Fix ARM64 build
+  2.Fix bug in FindTextAll macro recording, issue #331
+  3.Fix input control size issue of SearchReplace dialog(sln-1550)
+  4.Fix Hangul char detection bug
+  5.Use per monitor DPI awareness V2
+  6.Add ruler by sln-1550(https://github.com/sln-1550)
+  7.Add binascii, sre, struct, weakref, bytearrayobject to miniPython(sln-1550)
+  8.Add Copy All with File Title in right click menu of Search in Files results
+  9.Improve on Word Count dialog, make the summary text control readonly, use fix width font.
+  10.Update chardet to 0.0.8
+  11.Update Astyle to 3.4.9
+  12.Update hunspell to 1.7.2
+  13.Update Simplified Chinese translations
+  14.Update wxWidgets to 3.3.2
+  15.Fix build errors with current Boost, GCC and MSVC
+  16.Build with C++17, replace obsolete C++ syntax with C++11/17 equivalents
+  17.Add Visual Studio 2026 project (msw/vc18), supports x64 and Win32
+  18.Add Windows/MSYS2 build script
+  19.Add macOS build script and .app bundle packaging
+  20.Use UTF-8 as the default encoding for new documents and files
+  21.Fix DBCS lead byte detection of MBCS decoding in UNICODE build
+  22.Fix dangling reference returned by astyle formatter in Win32 build
+ -- Teng-Yi Tseng <tenyitseng@gmail.com>  Wed, 21 Oct 2026 21:35:25 +0800
+
 madedit-mod (0.4.20-1) stable; urgency=low
   1.Fix: JSON formatter convert Unicode chars to UTF8 chars #309
   2.Fix global-buffer-overflow due EUCTW_TABLE_SIZE

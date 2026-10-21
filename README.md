@@ -81,6 +81,30 @@ Translations
 
 News
 =======
+Mod v0.4.21
+* Fix ARM64 build
+* Fix bug in FindTextAll macro recording, issue #331
+* Fix input control size issue of SearchReplace dialog(sln-1550)
+* Fix Hangul char detection bug
+* Use per monitor DPI awareness V2
+* Add ruler by sln-1550(https://github.com/sln-1550)
+* Add binascii, sre, struct, weakref, bytearrayobject to miniPython(sln-1550)
+* Add Copy All with File Title in right click menu of Search in Files results
+* Improve on Word Count dialog, make the summary text control readonly, use fix width font.
+* Update chardet to 0.0.8
+* Update Astyle to 3.4.9
+* Update hunspell to 1.7.2
+* Update Simplified Chinese translations
+* Update wxWidgets to 3.3.2
+* Fix build errors with current Boost, GCC and MSVC
+* Build with C++17, replace obsolete C++ syntax with C++11/17 equivalents
+* Add Visual Studio 2026 project (msw/vc18), supports x64 and Win32
+* Add Windows/MSYS2 build script
+* Add macOS build script and .app bundle packaging
+* Use UTF-8 as the default encoding for new documents and files
+* Fix DBCS lead byte detection of MBCS decoding in UNICODE build
+* Fix dangling reference returned by astyle formatter in Win32 build
+
 Mod v0.4.20
 * Fix: JSON formatter convert Unicode chars to UTF8 chars #309
 * Fix global-buffer-overflow due EUCTW_TABLE_SIZE
