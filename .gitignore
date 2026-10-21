@@ -119,3 +119,9 @@ msw/vc12/Debug
 msw/vc12/Release
 msw/vc12/Unicode Debug
 msw/vc12/Unicode Release
+msw/vc18/*.user
+msw/vc18/.vs
+msw/vc18/x64
+msw/vc18/win32
+msw/vc18/Debug
+msw/vc18/Release

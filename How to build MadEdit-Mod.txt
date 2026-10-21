@@ -99,13 +99,51 @@ is the same build system that is used on Linux and macOS.
 
 Building on Windows (MSVC)
 ==========================
-The Visual Studio projects are in msw/vc17 (VS 2022 and newer).  Open
-msw/vc17/MadEdit.sln and build the Release|x64 configuration.  They
-expect:
+The Visual Studio projects are in msw/vc18 (VS 2026, toolset v145) and
+msw/vc17 (VS 2022, toolset v143).  Open MadEdit.sln and build the
+Release|x64 or Debug|x64 configuration.  They expect:
   * WXWIN  - an unpacked wxWidgets MSW build (include\ and lib\vc_x64_lib)
   * BOOST_ROOT - the Boost headers
 The project builds minipython, the bundled Boost.Python and hunspell
 itself.
+
+The vc18 projects compile as C++17 (the bundled astyle 3.5.1 requires
+it).  Like vc17 they link the static CRT (/MT, /MTd), so wxWidgets has
+to be built as static libraries with the static CRT as well:
+
+* Download and unpack the wxWidgets 3.3 sources, e.g. to
+  D:\Devel\wxWidgets-3.3.2, and Boost, e.g. to D:\Devel\boost_1_91_0
+  (only the headers are used, Boost does not have to be built).
+
+* Create build\msw\wx_local.props in the wxWidgets tree:
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <Project ToolsVersion="4.0"
+             xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+      <PropertyGroup Label="UserMacros">
+        <wxRuntimeLibs>static</wxRuntimeLibs>
+        <wxReleaseRuntimeLibrary>MultiThreaded</wxReleaseRuntimeLibrary>
+        <wxDebugRuntimeLibrary>MultiThreadedDebug</wxDebugRuntimeLibrary>
+      </PropertyGroup>
+    </Project>
+
+* Build wxWidgets from a "Developer PowerShell for VS 2026":
+
+    msbuild build\msw\wx_vc17.sln /m /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145
+    msbuild build\msw\wx_vc17.sln /m /p:Configuration=Debug /p:Platform=x64 /p:PlatformToolset=v145
+
+  The libraries end up in lib\vc_x64_lib.
+
+* Set the environment variables (restart Visual Studio afterwards) and
+  build MadEdit:
+
+    setx WXWIN D:\Devel\wxWidgets-3.3.2
+    setx BOOST_ROOT D:\Devel\boost_1_91_0
+    msbuild msw\vc18\MadEdit.sln /m /p:Configuration=Release /p:Platform=x64
+
+  The result is msw\vc18\x64\Release\MadEdit.exe.  It reads its
+  configuration (MadEdit.cfg) and the syntax/, scripts/, Dictionaries/
+  and locale/ folders from the directory of the executable.
 
 Building on macOS
 =================
