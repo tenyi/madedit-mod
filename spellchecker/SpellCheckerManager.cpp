@@ -30,6 +30,7 @@ using boost::shared_ptr;
 using std::shared_ptr;
 #endif
 extern wxString g_MadEditHomeDir;
+extern wxString g_MadEditAppDir;
 
 #define CFG_SPELLCHECK_ENABLE_ONLINE_CHECK      _T("EnableOnlineChecker")
 #define CFG_SPELLCHECK_ENABLE_PERSONAL_DICT     _T("EnablePersonalDictionary")
@@ -166,6 +167,9 @@ void SpellCheckerManager::DetectDictionaryPath()
     }
 #endif
 	dictPaths.Add(g_MadEditHomeDir+wxT("Dictionaries"));
+	// .app bundle 內的字典放在 Contents/Resources/Dictionaries，
+	// g_MadEditAppDir 在 bundle 裡會指向 Resources 目錄。
+	dictPaths.Add(g_MadEditAppDir+wxT("Dictionaries"));
 
     //dictPaths.Add(m_pPlugin->GetOnlineCheckerConfigPath());
     for (size_t i = 0; i < dictPaths.GetCount(); ++i)

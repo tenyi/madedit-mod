@@ -111,8 +111,11 @@ extern const size_t g_LanguageCount = sizeof(g_LanguageValue) / sizeof(int);
 
 #ifdef __WXMSW__
 const wxString g_MadServerStr = wxT("MadMainApp");
-#else  //Linux
-const wxString g_MadServerStr = wxT("/tmp/MadMainApp");
+#else  //Unix/macOS: AF_UNIX socket 的路徑
+// 同一台機器上可能同時有多個使用者，socket 路徑要帶 uid，
+// 否則後啟動的實例會把別人正在用的 socket 檔刪掉並搶占。
+// 實際路徑在 OnInit 裡用 wxGetUserId() 填入。
+wxString g_MadServerStr;
 #endif
 const wxString g_MadTopicStr = wxT("single-instance");
 
@@ -329,6 +332,26 @@ bool MadEditApp::OnInit()
 	wxFileName filename(GetExecutablePath());
 	filename.MakeAbsolute();
 	g_MadEditAppDir = filename.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
+#if defined(__WXMAC__)
+	{
+		// .app bundle 裡，執行檔在 Contents/MacOS/，但資料檔（syntax/、scripts/、
+		// locale/、Dictionaries/）放在 Contents/Resources/。g_MadEditAppDir 是
+		// 所有資料檔搜尋路徑的基準，所以在此指向 Resources 目錄；
+		// 沒在 bundle 裡執行時維持原本的「執行檔所在目錄」。
+		wxString exeDir = g_MadEditAppDir;
+		if (exeDir.EndsWith(wxT("Contents/MacOS/")))
+		{
+			wxFileName res(exeDir + wxT("..") + wxT("/Resources"));
+			res.Normalize();
+			if (wxDirExists(res.GetPath()))
+			{
+				g_MadEditAppDir = res.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
+				if (!g_MadEditAppDir.EndsWith(wxT("/")))
+					g_MadEditAppDir += wxT("/");
+			}
+		}
+	}
+#endif
 	m_SigleAppChecker = 0;
 	m_AppServer = 0;
 #ifdef __WXMSW__
@@ -363,6 +386,9 @@ bool MadEditApp::OnInit()
 		// check SingleInstance and send filenames to previous MadEdit
 		wxString name = wxString::Format(wxT("MadEdit-%s"), wxGetUserId().GetData());
 		m_SigleAppChecker = new wxSingleInstanceChecker(name);
+#ifndef __WXMSW__
+		g_MadServerStr = wxT("/tmp/MadMainApp-") + wxGetUserId();
+#endif
 
 		// If using a single instance, use IPC to
 		// communicate with the other instance
@@ -373,11 +399,11 @@ bool MadEditApp::OnInit()
 
 			if (!m_AppServer->Create(g_MadServerStr))
 			{
-				ScanForLocales();
-				InitLocale();
+				// 沒有 IPC 服務就退回成多實例模式，不要直接結束程式，
+				// 否則使用者只會看到「開不起來」而沒有任何提示。
 				wxLogDebug(wxGetTranslation(_("Failed to create an IPC service.")));
-				OnExit();
-				return false;
+				delete m_AppServer;
+				m_AppServer = 0;
 			}
 		}
 		else
@@ -857,7 +883,7 @@ void ScanForLocales()
 	}
 
 #if defined (DATA_DIR)
-	searchPath = wxT(DATA_DIR"/locale/");
+	searchPath = wxString::FromUTF8(DATA_DIR "/locale/");
 
 	if (wxDir::Exists(searchPath))
 	{

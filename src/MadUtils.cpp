@@ -14,12 +14,8 @@
 #include <wx/filefn.h>
 #include <wx/filename.h>
 #include <wx/config.h>
+#include <wx/stdpaths.h>
 #include <locale.h>
-
-#if	defined(__WXMAC__)
-#include <wx/mac/private.h>
-#include <Processes.h>
-#endif
 
 #include "MadUtils.h"
 #include "MadEdit/MadEdit.h"
@@ -221,18 +217,11 @@ wxString GetExecutablePath()
 
 #elif defined(__WXMAC__)
 
-		ProcessInfoRec processinfo;
-		ProcessSerialNumber	procno ;
-		FSSpec fsSpec;
-
-		procno.highLongOfPSN = nullptr;
-		procno.lowLongOfPSN	= kCurrentProcess ;
-		processinfo.processInfoLength =	sizeof(ProcessInfoRec);
-		processinfo.processName	= nullptr;
-		processinfo.processAppSpec = &fsSpec;
-
-		GetProcessInformation(&procno , &processinfo)	;
-		path = wxMacFSSpec2MacFilename(&fsSpec);
+		// 舊版是拿 Carbon 的 ProcessManager 取 FSSpec，
+		// 那套 API 在 wxWidgets 3.x 已經移除（wxMacFSSpec2MacFilename 也不存在了）。
+		// wxStandardPaths 才是 3.x 的跨平台做法，從 .app bundle 啟動時也會
+		// 回傳 Contents/MacOS 底下執行檔的完整路徑。
+		path = wxStandardPaths::Get().GetExecutablePath();
 #else
 		wxString argv0 = wxTheApp->argv[0];
 
@@ -989,7 +978,7 @@ void ToolsMadScriptList(wxCommandEvent& event)
 		{
 			scripfile = 
 #if defined (DATA_DIR)
-				wxT(DATA_DIR"/madedit-mod/scripts/") +
+				wxString::FromUTF8(DATA_DIR "/madedit-mod/scripts/") +
 #else
 				wxT("/usr/share/madedit-mod/scripts/") +
 #endif

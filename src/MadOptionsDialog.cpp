@@ -1078,8 +1078,10 @@ void MadOptionsDialog::LoadOptions(void)
 	ComboBoxViewModeInOpen->SetSelection(ll);
 	cfg->Read(wxT("/UIView/MaxDisplaySize"), &ll);
 	EditMaxDisplaySize->SetValue(wxString() << ll);
-	ss = _("System Default");
-	cfg->Read(wxT("DefaultEncoding"), &ss);
+	// 預設編碼預設為 UTF-8，而不是「跟著系統編碼」
+	// （在繁體中文的系統上那會是 Big5）。使用者仍可自己選回 System Default。
+	ss = wxT("UTF-8");
+	cfg->Read(wxT("DefaultEncoding"), &ss, wxT("UTF-8"));
 	ComboBoxEncoding->SetValue(ss);
 	cfg->Read(wxT("EnforceDefaultEncoding"), &bb, false);
 	CheckBoxSkipAutoEncoding->SetValue(bb);

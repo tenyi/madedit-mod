@@ -3067,7 +3067,7 @@ bool MadLines::LoadFromFile(const wxString &filename, const wxString &encoding)
 
 	if (useencoding.IsEmpty() )
 	{
-		m_MadEdit->m_Config->Read(wxT("/MadEdit/DefaultEncoding"), &defaultenc);
+		m_MadEdit->m_Config->Read(wxT("/MadEdit/DefaultEncoding"), &defaultenc, wxT("UTF-8"));
 	}
 	else
 	{

@@ -780,8 +780,10 @@ MadEdit::MadEdit(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSi
 	m_Config = wxConfigBase::Get(false);
 	m_Config->SetPath(wxT("/MadEdit"));
 	m_ActiveLMSize = m_Config->ReadLong(wxT("ActiveLineMarkerSize"), 1);
-	wxString defaultenc;
-	m_Config->Read(wxT("DefaultEncoding"), &defaultenc);
+	// 預設編碼預設為 UTF-8。留空代表「跟著系統編碼」，在繁體中文的系統上
+	// 會變成 Big5，對現代的程式碼與文字檔來說並不理想。
+	wxString defaultenc = wxT("UTF-8");
+	m_Config->Read(wxT("DefaultEncoding"), &defaultenc, wxT("UTF-8"));
 	m_Syntax = MadSyntax::GetSyntaxByTitle(wxGetTranslation(MadPlainTextTitle));
 	wxASSERT(m_Syntax != 0);
 	if (m_SpellCheckerPtr)

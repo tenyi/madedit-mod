@@ -1023,7 +1023,7 @@ void MadMacroDlg::OnToolsMadScriptList(wxCommandEvent& event)
 		{
 			scripfile =
 #if defined (DATA_DIR)
-				wxT(DATA_DIR"/madedit-mod/scripts/") +
+				wxString::FromUTF8(DATA_DIR "/madedit-mod/scripts/") +
 #else
 				wxT("/usr/share/madedit-mod/scripts/") +
 #endif

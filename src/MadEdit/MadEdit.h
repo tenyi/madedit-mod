@@ -890,8 +890,9 @@ public: // basic functions
 		if (m_NewLineType == nltDefault) {
 #ifdef __WXMSW__
 			return nltDOS;
-#elif __WXMAC__
-			return nltMAC;
+#elif defined(__WXMAC__)
+			// macOS 的文字檔用 LF，不是 classic Mac OS 的 CR。
+			return nltUNIX;
 #else
 			return nltUNIX;
 #endif
@@ -904,8 +905,8 @@ public: // basic functions
 		if (m_InsertNewLineType == nltDefault) {
 #ifdef __WXMSW__
 			return nltDOS;
-#elif __WXMAC__
-			return nltMAC;
+#elif defined(__WXMAC__)
+			return nltUNIX;
 #else
 			return nltUNIX;
 #endif
