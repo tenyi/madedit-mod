@@ -3932,7 +3932,10 @@ static int is_dbcs_lead_byte(const char *s, int offset)
     const char *curr = s + offset;
 
     if (IsDBCSLeadByte(*curr)) {
-        const char *prev = (const char *)CharPrev((LPCSTR)s, (LPCSTR)curr);
+        /* 明確呼叫 ANSI 版的 CharPrevA：專案以 CharacterSet=Unicode 編譯時，
+         * CharPrev 會被展開成 CharPrevW，把 char 位元組當成 wchar_t 處理，
+         * 導致 DBCS 前導位元組判斷錯誤。 */
+        const char *prev = (const char *)CharPrevA((LPCSTR)s, (LPCSTR)curr);
         return (prev == curr) || !IsDBCSLeadByte(*prev) || (curr - prev == 2);
     }
     return 0;

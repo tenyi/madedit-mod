@@ -198,7 +198,12 @@ WIN32 is still required for the locale module.
 #ifdef MS_WIN64
 typedef __int64 ssize_t;
 #else
-typedef _W64 int ssize_t;
+/* 32 位元 Windows 改用 long（原本是 int）：
+ * windows.h 的 SSIZE_T（LONG_PTR）與 wxWidgets 3.3 的 wx/types.h 在 Win32
+ * 都把 ssize_t 定義成 long，若這裡用 int，同一個編譯單元先後引入 wx 與
+ * Python 標頭時會出現 C2371「ssize_t 重複定義」。在 MSVC 的 32 位元環境
+ * int 與 long 同為 32 位元，二進位上沒有差別。 */
+typedef _W64 long ssize_t;
 #endif
 #ifndef HAVE_SSIZE_T
 #define HAVE_SSIZE_T 1
