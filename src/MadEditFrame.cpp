@@ -1296,7 +1296,7 @@ void OnReceiveMessage(const wchar_t *msg, size_t WXUNUSED(size), bool activeFile
 #if defined (DATA_DIR)
 				else
 				{
-					mfilename = wxT(DATA_DIR"/scripts") + wxFILE_SEP_PATH +  mpScript;
+					mfilename = wxString::FromUTF8(DATA_DIR "/scripts") + wxFILE_SEP_PATH +  mpScript;
 					if (wxFileExists(mfilename))
 					{
 						mpScript = mfilename;
@@ -2866,7 +2866,7 @@ MadEditFrame::MadEditFrame(wxWindow *parent, wxWindowID id, const wxString &titl
 	MadSyntax::AddSyntaxFilesPath(g_MadEditAppDir + wxT("syntax") + wxFILE_SEP_PATH);
 	MadSyntax::AddSyntaxFilesPath(g_MadEditHomeDir + wxT("syntax") + wxFILE_SEP_PATH);
 #if defined (DATA_DIR)
-	MadSyntax::AddSyntaxFilesPath(wxT(DATA_DIR"/madedit-mod/syntax/"));
+	MadSyntax::AddSyntaxFilesPath(wxString::FromUTF8(DATA_DIR "/madedit-mod/syntax/"));
 #else
 	MadSyntax::AddSyntaxFilesPath(wxT("/usr/share/madedit-mod/syntax/"));
 #endif
@@ -3551,7 +3551,7 @@ void MadEditFrame::CreateGUIControls(void)
 		scriptsLibDirs.Add(g_MadEditAppDir + wxT("scripts") + wxFILE_SEP_PATH);
 		scriptsLibDirs.Add(g_MadEditHomeDir + wxT("scripts") + wxFILE_SEP_PATH);
 #if defined (DATA_DIR)
-		scriptsLibDirs.Add(wxT(DATA_DIR"/madedit-mod/scripts/"));
+		scriptsLibDirs.Add(wxString::FromUTF8(DATA_DIR "/madedit-mod/scripts/"));
 #else
 		scriptsLibDirs.Add(wxT("/usr/share/madedit-mod/scripts/"));
 #endif
@@ -4714,7 +4714,11 @@ bool MadEditFrame::OpenFile(const wxString &fname, bool mustExist, bool changeSe
 	else
 	{
 		// create a new MadEdit
-		madedit = new MadEdit(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, /*wxSIMPLE_BORDER|*/wxWANTS_CHARS);
+		//
+		// wxWidgets 3.x 的 wxAuiNotebook::AddPage 要求頁面的 parent 必須就是
+		// notebook 本身（wxCHECK_MSG(page->GetParent() == this)），舊版 wx 2.8
+		// 會自行 reparent。parent 給錯的話 AddPage 會直接失敗、頁面開不起來。
+		madedit = new MadEdit(m_Notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, /*wxSIMPLE_BORDER|*/wxWANTS_CHARS);
 		madedit->SetWindowStyleFlag(madedit->GetWindowStyleFlag() & ~wxTAB_TRAVERSAL);
 		//madedit->SetDropTarget(new DnDFile());
 		madedit->SetOnSelectionChanged(&OnEditSelectionChanged);
@@ -9685,7 +9689,7 @@ void MadEditFrame::OnToolsMadScriptList(wxCommandEvent& event)
 		{
 			scripfile = 
 #if defined (DATA_DIR)
-				wxT(DATA_DIR"/madedit-mod/scripts/") +
+				wxString::FromUTF8(DATA_DIR "/madedit-mod/scripts/") +
 #else
 			 	wxT("/usr/share/madedit-mod/scripts/") +
 #endif
