@@ -341,14 +341,12 @@ bool MadEditApp::OnInit()
 		wxString exeDir = g_MadEditAppDir;
 		if (exeDir.EndsWith(wxT("Contents/MacOS/")))
 		{
-			wxFileName res(exeDir + wxT("..") + wxT("/Resources"));
-			res.Normalize();
-			if (wxDirExists(res.GetPath()))
-			{
+			// 要用 DirName()：wxFileName(".../MacOS/../Resources") 會把 Resources
+			// 當成檔名，GetPath() 只會得到 Contents/，資料檔與翻譯檔就全找不到。
+			wxFileName res = wxFileName::DirName(exeDir + wxT("../Resources"));
+			res.Normalize(wxPATH_NORM_DOTS | wxPATH_NORM_ABSOLUTE);
+			if (res.DirExists())
 				g_MadEditAppDir = res.GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
-				if (!g_MadEditAppDir.EndsWith(wxT("/")))
-					g_MadEditAppDir += wxT("/");
-			}
 		}
 	}
 #endif
