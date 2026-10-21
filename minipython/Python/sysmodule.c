@@ -1670,10 +1670,13 @@ PySys_SetArgvEx(int argc, char **argv, int updatepath)
             path that it represents. Under CE, there are no relative paths so
             the argument must be the full path anyway. */
             char *ptemp;
-            if (GetFullPathName((LPCWSTR)argv0,
+            /* argv0 與 fullpath 都是 ANSI 的 char 緩衝區，這裡必須明確
+               使用 ANSI 版的 API；原本的 GetFullPathName((LPCWSTR)argv0, ...)
+               會隨 UNICODE 巨集在寬/窄字元之間跳動，型別與內容都不對。 */
+            if (GetFullPathNameA(argv0,
                                sizeof(fullpath),
-                               (LPWSTR)fullpath,
-                               (LPWSTR*)&ptemp)) {
+                               fullpath,
+                               &ptemp)) {
                 argv0 = fullpath;
             }
 #endif

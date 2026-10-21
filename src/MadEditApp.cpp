@@ -440,7 +440,8 @@ bool MadEditApp::OnInit()
 		}
 	}
 
-	wxHandleFatalExceptions();
+	// wx 3.1 起 wxHandleFatalExceptions() 已改為預設行為；
+	// wx 3.3 更是直接移除該函式，改由覆寫 OnFatalException() 來處理。
 #ifdef __WXGTK__
 	bool bDisableWarningMessage = true;
 	cfg->Read(wxT("/MadEdit/DisableWarningMessage"), &bDisableWarningMessage, true);

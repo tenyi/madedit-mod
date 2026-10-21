@@ -5,7 +5,9 @@ typedef PyObject * identifier;
 typedef PyObject * string;
 typedef PyObject * object;
 
-#ifndef __cplusplus
+/* C23 起 bool/false/true 已经是关键字与预定义宏，不需要自己定义；
+   否则 typedef enum {false, true} bool; 会直接编译失败。 */
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 typedef enum {false, true} bool;
 #endif
 

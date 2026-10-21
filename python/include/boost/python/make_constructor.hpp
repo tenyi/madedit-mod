@@ -37,7 +37,9 @@ namespace detail
 
       PyObject* operator()(T x) const
       {
-          dispatch(x, is_pointer<T>());
+          // 用轉發的方式傳遞：T 有可能是 std::unique_ptr 這種不可複製的型別，
+          // 原本以 by value 傳參會觸發 deleted copy constructor。
+          dispatch(std::move(x), is_pointer<T>());
           return none();
       }
 
@@ -47,7 +49,7 @@ namespace detail
       {
 #if defined(BOOST_NO_CXX11_SMART_PTR)
 	std::auto_ptr<U> owner(x);
-	dispatch(owner, detail::false_());
+	dispatch(std::move(owner), detail::false_());
 #else
 	std::unique_ptr<U> owner(x);
 	dispatch(std::move(owner), detail::false_());
@@ -55,7 +57,7 @@ namespace detail
       }
       
       template <class Ptr>
-      void dispatch(Ptr x, detail::false_) const
+      void dispatch(Ptr&& x, detail::false_) const
       {
           typedef typename pointee<Ptr>::type value_type;
           typedef objects::pointer_holder<Ptr,value_type> holder;

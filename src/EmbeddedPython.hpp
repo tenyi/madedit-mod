@@ -10,7 +10,12 @@
 
 #include <Python.h>
 
-#define BOOST_PYTHON_STATIC_LIB
+// Boost.Python 是以靜態方式編進本程式的，必須宣告成 static lib，
+// 否則 BOOST_PYTHON_DECL 會被展開成 __declspec(dllimport)。
+// 若建置系統已經用 -D 定義過，就不要重複定義。
+#ifndef BOOST_PYTHON_STATIC_LIB
+	#define BOOST_PYTHON_STATIC_LIB
+#endif
 #include "../python/include/boost/python.hpp"
 #include <boost/function.hpp>
 

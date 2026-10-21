@@ -1711,13 +1711,17 @@ case_ok(char *buf, Py_ssize_t len, Py_ssize_t namelen, char *name)
 
 /* MS_WINDOWS */
 #if defined(MS_WINDOWS)
-    WIN32_FIND_DATA data;
+    /* buf 是 ANSI 路徑緩衝區（用 strcpy 組成），後面也比照 strncmp 以
+       ANSI 比較，所以這裡必須明確使用 ANSI 版的 API。
+       原本寫成 FindFirstFile((LPCWSTR)buf, ...)，會隨著 UNICODE 巨集
+       在寬字元與窄字元之間跳動，型別與內容都不對。 */
+    WIN32_FIND_DATAA data;
     HANDLE h;
 
     if (Py_GETENV("PYTHONCASEOK") != NULL)
         return 1;
 
-    h = FindFirstFile((LPCWSTR)buf, &data);
+    h = FindFirstFileA(buf, &data);
     if (h == INVALID_HANDLE_VALUE) {
         PyErr_Format(PyExc_NameError,
           "Can't find file for module %.100s\n(filename %.300s)",
@@ -1725,7 +1729,7 @@ case_ok(char *buf, Py_ssize_t len, Py_ssize_t namelen, char *name)
         return 0;
     }
     FindClose(h);
-    return strncmp((const char *)data.cFileName, name, namelen) == 0;
+    return strncmp(data.cFileName, name, namelen) == 0;
 
 /* DJGPP */
 #elif defined(DJGPP)

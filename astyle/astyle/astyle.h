@@ -59,7 +59,7 @@
 // astyle namespace
 //-----------------------------------------------------------------------------
 #if __cplusplus >= 201703L
-#define STRING_VIEW STRING_VIEW
+#define STRING_VIEW std::string_view
 #else
 #define STRING_VIEW const std::string&
 #endif

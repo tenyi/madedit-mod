@@ -276,7 +276,10 @@ typedef int pid_t;
 #endif
 
 #define COMPILER "[gcc]"
-#define hypot _hypot
+/* 舊版 MinGW 的 math.h 沒有 C99 的 hypot，才需要把它導向 _hypot。
+   現代的 MinGW-w64 已經提供 hypot；若仍定義這個巨集，
+   libstdc++ 的 <cmath> 會把 "using ::hypot;" 變成 "using ::_hypot;"
+   而 _hypot 沒有宣告，導致編譯失敗。 */
 #define PY_LONG_LONG long long
 #define PY_LLONG_MIN LLONG_MIN
 #define PY_LLONG_MAX LLONG_MAX
@@ -336,6 +339,14 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 #		endif /* _MSC_VER */
 #	endif /* Py_BUILD_CORE */
 #endif /* MS_COREDLL */
+
+/* MinGW-w64 (GCC) 不像 MSVC 那樣定義 MS_WIN64，
+   在 64 位元的 Windows 上手動補上；
+   否則下面會套用 MS_WIN32 分支的 32 位元 SIZEOF_* 數值，
+   讓 Python 物件的記憶體配置在 x64 上算錯。 */
+#if !defined(MS_WIN64) && defined(__MINGW64__)
+#	define MS_WIN64
+#endif
 
 #if defined(MS_WIN64)
 /* maintain "win32" sys.platform for backward compatibility of Python code,
@@ -567,12 +578,12 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 #define Py_USING_UNICODE
 
 /* Define as the size of the unicode type. */
-/* This is enough for unicodeobject.h to do the "right thing" on Windows. */
-#ifdef _WIN64
-#define Py_UNICODE_SIZE 4
-#else //_WIN32
+/* CPython 2.7 在 Windows 一律使用 UCS-2，也就是讓 Py_UNICODE 等同於
+   wchar_t。只有這樣 Objects/fileobject.c、Python/errors.c 這類地方
+   才能把 Py_UNICODE* 直接餵給 _wfopen、wcslen 等 Win32 寬字元 API。
+   若改成 4，Py_UNICODE 會變成 unsigned int，上述呼叫不只是型別不符，
+   讀到的字元內容也會是錯的。 */
 #define Py_UNICODE_SIZE 2
-#endif
 /* Use Python's own small-block memory-allocator. */
 #define WITH_PYMALLOC 1
 

@@ -47,8 +47,11 @@ inline char_type xtolower(char_type ch)
 	if (ch < 0 || ch > 0xFFFF) { return ch; }
 
 #if defined(__WXMSW__)
-	LPWSTR tch = (LPWSTR)ch;
-	return (char_type)CharLowerW(tch);
+	// 原本寫成 (LPWSTR)ch 再呼叫 CharLowerW()，是把字元「值」當成記憶體位址
+	// 傳進去，實際上會解參考到無效位址。改用固定長度的緩衝區做就地轉換。
+	wchar_t tch = (wchar_t)ch;
+	::CharLowerBuffW(&tch, 1);
+	return (char_type)tch;
 #else
 	return std::towlower(wchar_t(ch));
 #endif
@@ -58,8 +61,9 @@ template<>
 inline wchar_t xtolower(wchar_t ch)
 {
 #if defined(__WXMSW__)
-	LPWSTR tch = (LPWSTR)ch;
-	return (wchar_t)CharLowerW(tch);
+	wchar_t tch = ch;
+	::CharLowerBuffW(&tch, 1);
+	return tch;
 #else
 	return std::towlower(wchar_t(ch));
 #endif
@@ -316,16 +320,18 @@ struct ucs4_regex_traits: public null_regex_traits<ucs4_t>
 		if (ch < 0 || ch > 0xFFFF) { return ch; }
 
 #if defined(__WXMSW__)
-		LPWSTR tch = (LPWSTR)ch;
-		return (char_type2)CharLowerW(tch);
+		wchar_t tch = (wchar_t)ch;
+		::CharLowerBuffW(&tch, 1);
+		return (char_type2)tch;
 #else
 		return std::towlower(wchar_t(ch));
 #endif
 	}
 	static wchar_t tolower(wchar_t ch) {
 #if defined(__WXMSW__)
-		LPWSTR tch = (LPWSTR)ch;
-		return (wchar_t)CharLowerW(tch);
+		wchar_t tch = ch;
+		::CharLowerBuffW(&tch, 1);
+		return tch;
 #else
 		return std::towlower(ch);
 #endif
@@ -336,16 +342,18 @@ struct ucs4_regex_traits: public null_regex_traits<ucs4_t>
 		if (ch < 0 || ch > 0xFFFF) { return ch; }
 
 #if defined(__WXMSW__)
-		LPWSTR tch = (LPWSTR)ch;
-		return (char_type2)CharUpperW(tch);
+		wchar_t tch = (wchar_t)ch;
+		::CharUpperBuffW(&tch, 1);
+		return (char_type2)tch;
 #else
 		return std::towupper(wchar_t(ch));
 #endif
 	}
 	static wchar_t toupper(wchar_t ch) {
 #if defined(__WXMSW__)
-		LPWSTR tch = (LPWSTR)ch;
-		return (wchar_t)CharUpperW(tch);
+		wchar_t tch = ch;
+		::CharUpperBuffW(&tch, 1);
+		return tch;
 #else
 		return std::towupper(wchar_t(ch));
 #endif
@@ -597,7 +605,7 @@ struct UCIterator   // ucs4_t widechar iterator
 		}
 
 		//--ucqidx;
-		//The regex search fails when content is "��1��", expression is   ����.+��" From    stonewell in SF.net
+		//The regex search fails when content is "��1��", expression is   ����.+��" From    stonewell in SF.net
 		if (pos != s_endpos) { --ucqidx; }
 
 		int len = ucqit->ucq[ucqidx].second;
@@ -760,9 +768,9 @@ MadSearchResult MadEdit::Search(/*IN_OUT*/MadCaretPos &beginpos, /*IN_OUT*/MadCa
 				else
 				{
 #ifdef __WXMSW__
-					LPWSTR singleChar = (LPTSTR)((TCHAR)text[i]);
-					singleChar = CharLowerW(singleChar);
-					text_lower << (TCHAR)singleChar;
+					wchar_t singleChar = (wchar_t)text[i];
+					::CharLowerBuffW(&singleChar, 1);
+					text_lower << (wchar_t)singleChar;
 #else
 					text_lower << (wchar_t)towlower(text[i]);
 #endif
