@@ -36,35 +36,35 @@ public:
     virtual ~wxClipboardGtk();
 
     // open the clipboard before SetData() and GetData()
-    virtual bool Open();
+    bool Open() override;
 
     // close the clipboard after SetData() and GetData()
-    virtual void Close();
+    void Close() override;
 
     // query whether the clipboard is opened
-    virtual bool IsOpened() const;
+    bool IsOpened() const override;
 
     // set the clipboard data. all other formats will be deleted.
-    virtual bool SetData(wxDataObject *data);
+    bool SetData(wxDataObject *data) override;
 
     // add to the clipboard data.
-    virtual bool AddData(wxDataObject *data);
+    bool AddData(wxDataObject *data) override;
 
     // ask if data in correct format is available
-    virtual bool IsSupported(const wxDataFormat& format);
+    bool IsSupported(const wxDataFormat& format) override;
 
     // ask if data in correct format is available
-    virtual bool IsSupportedAsync(wxEvtHandler *sink);
+    bool IsSupportedAsync(wxEvtHandler *sink) override;
 
     // fill data with data on the clipboard (if available)
-    virtual bool GetData(wxDataObject& data);
+    bool GetData(wxDataObject& data) override;
 
     // clears wxTheClipboard and the system's clipboard if possible
-    virtual void Clear();
+    void Clear() override;
 
     // If primary == TRUE, use primary selection in all further ops,
     // primary == FALSE resets it.
-    virtual void UsePrimarySelection(bool primary = TRUE)
+    void UsePrimarySelection(bool primary = TRUE) override
         { m_usePrimary = primary; }
     
     // implementation from now on

@@ -10,13 +10,8 @@
 #define _MADEDITFRAME_H_
 #include "MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-	using boost::shared_ptr;
-#else
-	#include <memory>
-	using std::shared_ptr;
-#endif
+#include <memory>
+using std::shared_ptr;
 
 #include <wx/wxprec.h>
 #ifdef __BORLANDC__
@@ -806,7 +801,7 @@ protected:
 	void CopyAllResults(bool with_title = false);
 
 #ifdef __WXMSW__
-	WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
+	WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam) override;
 #endif
 	static const long ID_WXTIMER;
 public:

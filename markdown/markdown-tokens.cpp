@@ -10,9 +10,9 @@
 #include <stack>
 #include <locale>
 
-#include <boost/lexical_cast.hpp>
+#include <string>
+#include <unordered_set>
 #include <boost/xpressive/xpressive.hpp>
-#include <boost/unordered_set.hpp>
 
 using std::cerr;
 using std::endl;
@@ -157,9 +157,9 @@ const wchar_t *cBlockTagInit[]={ L"p/", L"blockquote/", L"hr", L"h1/", L"h2/",
 //"!doctype", "bdo", "body", "button", "fieldset", "head", "html",
 //"legend", "noscript", "optgroup", "xmp",
 
-boost::unordered_set<std::wstring> otherTags, blockTags;
+std::unordered_set<std::wstring> otherTags, blockTags;
 
-void initTag(boost::unordered_set<std::wstring> &set, const wchar_t *init[]) {
+void initTag(std::unordered_set<std::wstring> &set, const wchar_t *init[]) {
 	for (size_t x=0; init[x]!=0; ++x) {
 		std::wstring str=init[x];
 		if (*str.rbegin()=='/') {
@@ -248,7 +248,7 @@ std::wstring RawText::_processHtmlTagAttributes(std::wstring src, ReplacementTab
 					xpressive::wsmatch mtag;
 					if (xpressive::regex_search(prevtag, endtag, mtag, cAttributeStrings)) {
 						tgttag+=std::wstring(prevtag, mtag[0].first);
-						tgttag+=L"\x01@"+boost::lexical_cast<std::wstring>(replacements.size())+L"@htmlTagAttr\x01";
+						tgttag+=L"\x01@"+std::to_wstring(replacements.size())+L"@htmlTagAttr\x01";
 						prevtag=mtag[0].second;
 
 						replacements.push_back(TokenPtr(new TextHolder(std::wstring(mtag[0]), false, cAmps|cAngles)));
@@ -286,7 +286,7 @@ std::wstring RawText::_processCodeSpans(std::wstring src, ReplacementTable&
 			xpressive::wsmatch m;
 			if (xpressive::regex_search(prev, end, m, cCodeSpan[pass])) {
 				tgt+=std::wstring(prev, m[0].first);
-				tgt+=L"\x01@"+boost::lexical_cast<std::wstring>(replacements.size())+L"@codeSpan\x01";
+				tgt+=L"\x01@"+std::to_wstring(replacements.size())+L"@codeSpan\x01";
 				prev=m[0].second;
 				replacements.push_back(TokenPtr(new CodeSpan(_restoreProcessedItems(m[1], replacements))));
 			} else {
@@ -310,7 +310,7 @@ std::wstring RawText::_processEscapedCharacters(const std::wstring& src) {
 			++i;
 			if (i!=end) {
 				optional<size_t> e=isEscapedCharacter(*i);
-				if (e) tgt+=L"\x01@#"+boost::lexical_cast<std::wstring>(*e)+L"@escaped\x01";
+				if (e) tgt+=L"\x01@#"+std::to_wstring(*e)+L"@escaped\x01";
 				else tgt=tgt+(wchar_t)'\\'+*i;
 				prev=i+1;
 			} else {
@@ -336,7 +336,7 @@ std::wstring RawText::_processSpaceBracketedGroupings(const std::wstring &src,
 		xpressive::wsmatch m;
 		if (xpressive::regex_search(prev, end, m, cRemove)) {
 			tgt+=std::wstring(prev, m[0].first);
-			tgt+=L"\x01@"+boost::lexical_cast<std::wstring>(replacements.size())+L"@spaceBracketed\x01";
+			tgt+=L"\x01@"+std::to_wstring(replacements.size())+L"@spaceBracketed\x01";
 			replacements.push_back(TokenPtr(new RawText(m[0])));
 			prev=m[0].second;
 		} else {
@@ -384,7 +384,7 @@ std::wstring RawText::_processLinksImagesAndTags(const std::wstring &src,
 			assert(m[0].length()!=0);
 
 			tgt+=std::wstring(prev, m[0].first);
-			tgt+=L"\x01@"+boost::lexical_cast<std::wstring>(replacements.size())+L"@links&Images1\x01";
+			tgt+=L"\x01@"+std::to_wstring(replacements.size())+L"@links&Images1\x01";
 			prev=m[0].second;
 
 			bool isImage=false, isLink=false, isReference=false;
@@ -428,7 +428,7 @@ std::wstring RawText::_processLinksImagesAndTags(const std::wstring &src,
 				} else {
 					replacements.push_back(TokenPtr(new HtmlAnchorTag(url, title)));
 					tgt+=contentsOrAlttext;
-					tgt+=L"\x01@"+boost::lexical_cast<std::wstring>(replacements.size())+L"@links&Images2\x01";
+					tgt+=L"\x01@"+std::to_wstring(replacements.size())+L"@links&Images2\x01";
 					replacements.push_back(TokenPtr(new HtmlTag(L"/a")));
 				}
 			} else {
@@ -608,10 +608,10 @@ TokenGroup RawText::_encodeProcessedItems(const std::wstring &src,
 
 			std::wstring ref=m[1];
 			if (ref[0]=='#') {
-				size_t n=boost::lexical_cast<size_t>(ref.substr(1));
+				size_t n=std::stoull(ref.substr(1));
 				r.push_back(TokenPtr(new EscapedCharacter(escapedCharacter(n))));
 			} else if (!ref.empty()) {
-				size_t n=boost::lexical_cast<size_t>(ref);
+				size_t n=std::stoull(ref);
 
 				assert(n<replacements.size());
 				r.push_back(replacements[n]);
@@ -641,10 +641,10 @@ std::wstring RawText::_restoreProcessedItems(const std::wstring &src,
 
 			std::wstring ref=m[1];
 			if (ref[0]=='#') {
-				size_t n=boost::lexical_cast<size_t>(ref.substr(1));
+				size_t n=std::stoull(ref.substr(1));
 				r << '\\' << escapedCharacter(n);
 			} else if (!ref.empty()) {
-				size_t n=boost::lexical_cast<size_t>(ref);
+				size_t n=std::stoull(ref);
 
 				assert(n<replacements.size());
 				replacements[n]->writeAsOriginal(r);

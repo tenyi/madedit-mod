@@ -12,10 +12,10 @@
 #include <string>
 #include <list>
 
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <unordered_map>
+
 #include <boost/optional.hpp>
-#include <boost/unordered_map.hpp>
 
 namespace markdown {
 
@@ -26,11 +26,14 @@ namespace markdown {
 	class Token;
 	class LinkIds;
 
-	typedef boost::shared_ptr<Token> TokenPtr;
+	typedef std::shared_ptr<Token> TokenPtr;
 	typedef std::list<TokenPtr> TokenGroup;
 
-	class Document: private boost::noncopyable {
+	class Document {
 		public:
+		// 取代 boost::noncopyable：禁止複製（理由見下方 copy() 的說明）
+		Document(const Document&) = delete;
+		Document& operator=(const Document&) = delete;
 		Document(size_t spacesPerTab=cDefaultSpacesPerTab);
 		Document(std::wistream& in, size_t spacesPerTab=cDefaultSpacesPerTab);
 		~Document();

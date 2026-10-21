@@ -10,11 +10,7 @@
 #define _MADLINES_H_
 #include "../MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-#else
-	#include <memory>
-#endif
+#include <memory>
 
 #include <wx/wxprec.h>
 
@@ -73,9 +69,9 @@ public:
 class MadConvFileName : public wxMBConv
 {
 public:
-	virtual size_t MB2WC(wchar_t *outputBuf, const char *psz, size_t outputSize) const;
-	virtual size_t WC2MB(char *outputBuf, const wchar_t *psz, size_t outputSize) const;
-	virtual wxMBConv *Clone() const { return new MadConvFileName; }
+	size_t MB2WC(wchar_t *outputBuf, const char *psz, size_t outputSize) const override;
+	size_t WC2MB(char *outputBuf, const wchar_t *psz, size_t outputSize) const override;
+	wxMBConv *Clone() const override { return new MadConvFileName; }
 };
 #endif
 
@@ -112,9 +108,9 @@ public:
 	MadMemData();
 	virtual ~MadMemData();
 
-	virtual wxByte Get(const wxFileOffset &pos);
-	virtual void Get(const wxFileOffset &pos, wxByte *buffer, size_t size);
-	virtual wxFileOffset Put(wxByte *buffer, size_t size);
+	wxByte Get(const wxFileOffset &pos) override;
+	void Get(const wxFileOffset &pos, wxByte *buffer, size_t size) override;
+	wxFileOffset Put(wxByte *buffer, size_t size) override;
 };
 
 class MadFileData : public MadInData, public MadOutData
@@ -138,10 +134,10 @@ private:
 public:
 	explicit MadFileData(const wxString &name);
 	virtual ~MadFileData();
-	virtual wxByte Get(const wxFileOffset &pos);
-	virtual void Get(const wxFileOffset &pos, wxByte *buffer, size_t size);
+	wxByte Get(const wxFileOffset &pos) override;
+	void Get(const wxFileOffset &pos, wxByte *buffer, size_t size) override;
 
-	virtual wxFileOffset Put(wxByte *buffer, size_t size);
+	wxFileOffset Put(wxByte *buffer, size_t size) override;
 	void Read(const wxFileOffset &pos, wxByte *buffer, size_t size) {
 		m_File.Seek(pos);
 		m_File.Read(buffer, size);

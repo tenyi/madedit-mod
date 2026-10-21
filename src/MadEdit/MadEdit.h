@@ -10,11 +10,7 @@
 #define _MADEDIT_H_
 #include "../MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-#else
-	#include <memory>
-#endif
+#include <memory>
 #include <set>
 
 #include <wx/wxprec.h>
@@ -457,11 +453,7 @@ private:
 	OnActivatePtr         m_OnActivate;
 
 	wxMilliClock_t m_lastDoubleClick;
-#if CPLUSEPLUSE98
-	boost::shared_ptr<wxSpellCheckEngineInterface> m_SpellCheckerPtr;
-#else
 	std::shared_ptr<wxSpellCheckEngineInterface> m_SpellCheckerPtr;
-#endif
     long           m_VSMousePos;
     long           m_HSMousePos;
     int            m_MaxDisplaySize;
@@ -665,7 +657,7 @@ protected:
 
 	void PanChinese(wxString &text);
 #ifdef __WXMSW__
-	WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
+	WXLRESULT MSWWindowProc(WXUINT message, WXWPARAM wParam, WXLPARAM lParam) override;
 #endif
 
 //#ifdef __WXGTK__
@@ -695,11 +687,7 @@ public: // basic functions
 	MadSyntax* GetSyntax() { return m_Syntax; }
 	wxString GetSyntaxTitle() { return m_Syntax->m_SynAttr->m_Title; }
 	void UpdateSyntaxDictionary();
-#if CPLUSEPLUSE98
-    boost::shared_ptr<PersonalDictionary>& GetSyntaxDictionary() { return m_Syntax->GetSyntaxDictionary(); }
-#else
     std::shared_ptr<PersonalDictionary>& GetSyntaxDictionary() { return m_Syntax->GetSyntaxDictionary(); }
-#endif
 	void ApplySyntaxAttributes(MadSyntax *syn, bool matchTitle);
 	void LoadDefaultSyntaxScheme() { MadSyntax::LoadScheme(wxT("Default"), m_Syntax); }
 
@@ -753,7 +741,7 @@ public: // basic functions
 		}
 	}
 
-	virtual bool SetFont(const wxFont& font) {
+	bool SetFont(const wxFont& font) override {
 		SetFont(font.GetFaceName(), font.GetPointSize());
 		return true;
 	}
@@ -811,11 +799,7 @@ public: // basic functions
 	bool GetLDClickHighlight() { return m_LDClickHighlight; }
     bool HasBackup() {return m_HasBackup;}
     void SetHasBackup(bool bk) {m_HasBackup = bk;}
-#if CPLUSEPLUSE98
-    boost::shared_ptr<wxSpellCheckEngineInterface> &GetSpellChecker() { return m_SpellCheckerPtr; }
-#else
     std::shared_ptr<wxSpellCheckEngineInterface> &GetSpellChecker() { return m_SpellCheckerPtr; }
-#endif
 
 	void SetMarkBracePair(bool value);
 	bool GetMarkBracePair() { return m_MarkBracePair; }

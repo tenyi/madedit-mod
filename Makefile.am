@@ -21,7 +21,9 @@ AM_CPPFLAGS = -DPy_NO_ENABLE_SHARED -DBOOST_PYTHON_STATIC_LIB -DHUNSPELL_STATIC 
 -I$(top_srcdir)/astyle/astyle -I$(top_srcdir)/src/MadEdit -I$(top_srcdir)/python/include \
 -I$(top_srcdir)/python/include/boost/python -I$(top_srcdir)/json
 
-madedit_CXXFLAGS = -DDATA_DIR=\"${datadir}\"
+# 程式碼需要 C++17（內附的 astyle 3.5.1 需要 C++17），
+# 明確指定標準，不依賴各編譯器的預設值（不同版本的 gcc/clang 預設標準不一）。
+madedit_CXXFLAGS = -std=gnu++17 -DDATA_DIR=\"${datadir}\"
 madedit_SOURCES =	src/MadAboutDialog.cpp \
 	src/MadAboutDialog.h \
 	src/MadCommand.h \

@@ -8,11 +8,7 @@
 
 #include "../MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-#else
-	#include <memory>
-#endif
+#include <memory>
 
 #include <cstddef>
 

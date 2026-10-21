@@ -16,13 +16,8 @@
 #include <cctype>
 #include <locale>
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-	using boost::shared_ptr;
-#else
-	#include <memory>
-	using std::shared_ptr;
-#endif
+#include <memory>
+using std::shared_ptr;
 
 //#include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/xpressive_dynamic.hpp>
@@ -162,10 +157,10 @@ bool Search(CharIter &begin, CharIter &end,
 
 	if (begin == end) { return false; }
 
-	__REGISTER size_t idx = 0;
-	__REGISTER const char_type *p = pattern;
+	size_t idx = 0;
+	const char_type *p = pattern;
 	CharIter beginpos;
-	__REGISTER char_type c1;
+	char_type c1;
 
 	for (;;)
 	{
@@ -218,7 +213,7 @@ bool Search(CharIter &begin, CharIter &end,
 				c1 = xtolower(c1);
 			}
 
-			__REGISTER int jv = jump_table.GetValue(c1);
+			int jv = jump_table.GetValue(c1);
 
 			if (jv >= (int)pat_len)
 			{

@@ -12,7 +12,7 @@
 #include <cassert>
 
 #include <boost/xpressive/xpressive.hpp>
-#include <boost/lexical_cast.hpp>
+#include <string>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/xpressive/xpressive_dynamic.hpp>
 #include <boost/xpressive/traits/null_regex_traits.hpp>
@@ -250,7 +250,7 @@ optional<TokenPtr> parseBlockQuote(CTokenGroupIter& i, CTokenGroupIter end) {
 		xpressive::wsmatch m;
 		if (xpressive::regex_match(line, m, cBlockQuoteExpression)) {
 			size_t quoteLevel=countQuoteLevel(m[1]);
-			xpressive::wsregex continuationExpression=xpressive::wsregex::compile(L"^((?: {0,3}>){"+boost::lexical_cast<std::wstring>(quoteLevel)+L"}) ?(.*)$");
+			xpressive::wsregex continuationExpression=xpressive::wsregex::compile(L"^((?: {0,3}>){"+std::to_wstring(quoteLevel)+L"}) ?(.*)$");
 
 			markdown::TokenGroup subTokens;
 			subTokens.push_back(TokenPtr(new markdown::token::RawText(m[2])));
@@ -358,9 +358,9 @@ optional<TokenPtr> parseListBlock(CTokenGroupIter& i, CTokenGroupIter end, bool 
 			static const xpressive::wsregex cContinuedItemExpression=xpressive::wsregex::compile(L"^ *([^ ].*)$");
 
 			xpressive::wsregex continuedAfterBlankLineExpression=xpressive::wsregex::compile(L"^ {"+
-				boost::lexical_cast<std::wstring>(indent+4)+L"}([^ ].*)$");
+				std::to_wstring(indent+4)+L"}([^ ].*)$");
 			xpressive::wsregex codeBlockAfterBlankLineExpression=xpressive::wsregex::compile(L"^ {"+
-				boost::lexical_cast<std::wstring>(indent+8)+L"}(.*)$");
+				std::to_wstring(indent+8)+L"}(.*)$");
 
 			enum NextItemType { cUnknown, cEndOfList, cAnotherItem };
 			NextItemType nextItem=cUnknown;

@@ -18,21 +18,21 @@
 #include <map>
 #include <vector>
 #include <exception>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-//using boost::shared_ptr;
+//using std::shared_ptr;
 
 namespace JSON
 {
 	// Need to forward declare these class as they all refer to each other
     class Object;
-    typedef boost::shared_ptr<Object> ObjectPtr;
+    typedef std::shared_ptr<Object> ObjectPtr;
 
     class Array;
-    typedef boost::shared_ptr<Array> ArrayPtr;
+    typedef std::shared_ptr<Array> ArrayPtr;
 
     class Value;
-    typedef boost::shared_ptr<Value> ValuePtr;
+    typedef std::shared_ptr<Value> ValuePtr;
 
     class Value
 	{
@@ -56,11 +56,11 @@ namespace JSON
 
 	bool isObject() const { return type == TypeObject; }
 		// To convert value to object use
-		// boost::dynamic_pointer_cast<JSON::Object>(v)
+		// std::dynamic_pointer_cast<JSON::Object>(v)
 
 	bool isArray() const { return type == TypeArray; }
 		// To convert value to array use
-		// boost::dynamic_pointer_cast<JSON::Array>(v)
+		// std::dynamic_pointer_cast<JSON::Array>(v)
 
 	bool isNull() const { return type == TypeNull; }
 
@@ -90,10 +90,10 @@ namespace JSON
 	    String(const char *str) : Value(TypeString), val(str) {}
 	virtual ~String() {}
 
-	virtual std::string getString() const;
+	std::string getString() const override;
 
 	static std::string encode(const std::string &raw);
-	virtual std::string encode() const;
+	std::string encode() const override;
     protected:
 	std::string val;
 	};
@@ -110,10 +110,10 @@ namespace JSON
 
 	virtual ~Number() {}
 
-	virtual double getNumber() const;
+	double getNumber() const override;
 
 	static std::string encode(double d);
-	virtual std::string encode() const;
+	std::string encode() const override;
     protected:
 	double val;
 	};
@@ -126,9 +126,9 @@ namespace JSON
 	    Boolean(bool b) : Value(TypeBoolean), val(b) {}
 	virtual ~Boolean() {}
 
-	virtual bool getBoolean() const;
+	bool getBoolean() const override;
 
-	virtual std::string encode() const;
+	std::string encode() const override;
     protected:
 	bool val;
 	};
@@ -168,8 +168,8 @@ namespace JSON
 	typedef std::map<std::string, ValuePtr> Properties;
 	Properties properties;
 
-	virtual std::string encode() const;
-	virtual std::string encodePretty(int indent = 0) const;
+	std::string encode() const override;
+	std::string encodePretty(int indent = 0) const override;
 	};
 
     class Array
@@ -196,8 +196,8 @@ namespace JSON
 	typedef std::vector<ValuePtr> Elements;
 	Elements elements;
 
-	virtual std::string encode() const;
-	virtual std::string encodePretty(int indent = 0) const;
+	std::string encode() const override;
+	std::string encodePretty(int indent = 0) const override;
 	};
 
     class Null
@@ -207,16 +207,16 @@ namespace JSON
 		Null() : Value(TypeNull)  {}
 	virtual ~Null() {}
 
-	virtual std::string encode() const;
+	std::string encode() const override;
 	};
 
     class Exception : public std::exception
 	{
     public:
 	Exception(const std::string &str);
-	virtual ~Exception() throw();
+	virtual ~Exception() noexcept;
 
-	virtual const char *what() const throw();
+	const char *what() const noexcept override;
     protected:
 	std::string reason;
 	};

@@ -27,7 +27,7 @@ public:
         : wxFileHistory(maxFiles, idBase), m_caseSensitive(caseSensitive), m_isFileHistory(isFileHistory), m_idBase(idBase)
     {}
 
-    virtual void AddFileToHistory(const wxString& file);
+    void AddFileToHistory(const wxString& file) override;
 private:
 #if (wxMAJOR_VERSION >= 3)
 	wxString NormalizeFileName(const wxFileName& fn);

@@ -19,13 +19,13 @@ class ASStreamIterator : public astyle::ASSourceIterator
         ASStreamIterator(MadEdit* cbe, const wxChar* in);
         virtual ~ASStreamIterator();
 
-        bool hasMoreLines() const;
-        int  getStreamLength() const;
-        std::streamoff getPeekStart() const { return 0; }
-        std::string nextLine(bool emptyLineWasDeleted = false);
-        std::string peekNextLine();
-        void peekReset();
-        std::streamoff tellg();
+        bool hasMoreLines() const override;
+        int  getStreamLength() const override;
+        std::streamoff getPeekStart() const override { return 0; }
+        std::string nextLine(bool emptyLineWasDeleted = false) override;
+        std::string peekNextLine() override;
+        void peekReset() override;
+        std::streamoff tellg() override;
 
         bool FoundBookmark() const   { return m_FoundBookmark;    }
         void ClearFoundBookmark()    { m_FoundBookmark = false;   }

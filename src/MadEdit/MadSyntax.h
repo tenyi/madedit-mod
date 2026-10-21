@@ -10,13 +10,8 @@
 #define _MADSYNTAX_H_
 #include "../MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-	using boost::shared_ptr;
-#else
-	#include <memory>
-	using std::shared_ptr;
-#endif
+#include <memory>
+using std::shared_ptr;
 
 #include <wx/wxprec.h>
 

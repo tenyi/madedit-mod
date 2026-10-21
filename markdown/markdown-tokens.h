@@ -32,7 +32,7 @@ class LinkIds {
 		std::wstring& title);
 
 	private:
-	typedef boost::unordered_map<std::wstring, Target> Table;
+	typedef std::unordered_map<std::wstring, Target> Table;
 
 	static std::wstring _scrubKey(std::wstring str);
 
@@ -83,13 +83,13 @@ class TextHolder: public Token {
 		encodingFlags): mText(text), mCanContainMarkup(canContainMarkup),
 		mEncodingFlags(encodingFlags) { }
 
-	virtual void writeAsHtml(std::wostream& out) const;
+	void writeAsHtml(std::wostream& out) const override;
 
-	virtual void writeToken(std::wostream& out) const { out << L"TextHolder: " << mText << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"TextHolder: " << mText << (wchar_t)'\n'; }
 
-	virtual optional<const std::wstring&> text() const { return mText; }
+	optional<const std::wstring&> text() const override { return mText; }
 
-	virtual bool canContainMarkup() const { return mCanContainMarkup; }
+	bool canContainMarkup() const override { return mCanContainMarkup; }
 
 	private:
 	const std::wstring mText;
@@ -102,9 +102,9 @@ class RawText: public TextHolder {
 	RawText(const std::wstring& text, bool canContainMarkup=true):
 		TextHolder(text, canContainMarkup, cAmps|cAngles|cQuotes) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"RawText: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"RawText: " << *text() << (wchar_t)'\n'; }
 
-	virtual optional<TokenGroup> processSpanElements(const LinkIds& idTable);
+	optional<TokenGroup> processSpanElements(const LinkIds& idTable) override;
 
 	private:
 	typedef std::vector<TokenPtr> ReplacementTable;
@@ -124,18 +124,18 @@ class HtmlTag: public TextHolder {
 	public:
 	HtmlTag(const std::wstring& contents): TextHolder(contents, false, cAmps|cAngles) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"HtmlTag: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"HtmlTag: " << *text() << (wchar_t)'\n'; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << (wchar_t)'<'; }
-	virtual void postWrite(std::wostream& out) const { out << (wchar_t)'>'; }
+	void preWrite(std::wostream& out) const override { out << (wchar_t)'<'; }
+	void postWrite(std::wostream& out) const override { out << (wchar_t)'>'; }
 };
 
 class HtmlAnchorTag: public TextHolder {
 	public:
 	HtmlAnchorTag(const std::wstring& url, const std::wstring& title=std::wstring());
 
-	virtual void writeToken(std::wostream& out) const { out << L"HtmlAnchorTag: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"HtmlAnchorTag: " << *text() << (wchar_t)'\n'; }
 };
 
 class InlineHtmlContents: public TextHolder {
@@ -143,7 +143,7 @@ class InlineHtmlContents: public TextHolder {
 	InlineHtmlContents(const std::wstring& contents): TextHolder(contents, false,
 		cAmps|cAngles) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"InlineHtmlContents: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"InlineHtmlContents: " << *text() << (wchar_t)'\n'; }
 };
 
 class InlineHtmlComment: public TextHolder {
@@ -151,7 +151,7 @@ class InlineHtmlComment: public TextHolder {
 	InlineHtmlComment(const std::wstring& contents): TextHolder(contents, false,
 		0) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"InlineHtmlComment: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"InlineHtmlComment: " << *text() << (wchar_t)'\n'; }
 };
 
 class CodeBlock: public TextHolder {
@@ -159,9 +159,9 @@ class CodeBlock: public TextHolder {
 	CodeBlock(const std::wstring& actualContents): TextHolder(actualContents,
 		false, cDoubleAmps|cAngles|cQuotes) { }
 
-	virtual void writeAsHtml(std::wostream& out) const;
+	void writeAsHtml(std::wostream& out) const override;
 
-	virtual void writeToken(std::wostream& out) const { out << L"CodeBlock: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"CodeBlock: " << *text() << (wchar_t)'\n'; }
 };
 
 class CodeSpan: public TextHolder {
@@ -169,9 +169,9 @@ class CodeSpan: public TextHolder {
 	CodeSpan(const std::wstring& actualContents): TextHolder(actualContents,
 		false, cDoubleAmps|cAngles|cQuotes) { }
 
-	virtual void writeAsHtml(std::wostream& out) const;
-	virtual void writeAsOriginal(std::wostream& out) const;
-	virtual void writeToken(std::wostream& out) const { out << L"CodeSpan: " << *text() << (wchar_t)'\n'; }
+	void writeAsHtml(std::wostream& out) const override;
+	void writeAsOriginal(std::wostream& out) const override;
+	void writeToken(std::wostream& out) const override { out << L"CodeSpan: " << *text() << (wchar_t)'\n'; }
 };
 
 class Header: public TextHolder {
@@ -179,14 +179,14 @@ class Header: public TextHolder {
 	Header(size_t level, const std::wstring& text): TextHolder(text, true,
 		cAmps|cAngles|cQuotes), mLevel(level) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"Header " <<
+	void writeToken(std::wostream& out) const override { out << L"Header " <<
 		mLevel << ": " << *text() << (wchar_t)'\n'; }
 
-	virtual bool inhibitParagraphs() const { return true; }
+	bool inhibitParagraphs() const override { return true; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"<h" << mLevel << L">"; }
-	virtual void postWrite(std::wostream& out) const { out << L"</h" << mLevel << L">\n"; }
+	void preWrite(std::wostream& out) const override { out << L"<h" << mLevel << L">"; }
+	void postWrite(std::wostream& out) const override { out << L"</h" << mLevel << L">\n"; }
 
 	private:
 	size_t mLevel;
@@ -197,9 +197,9 @@ class BlankLine: public TextHolder {
 	BlankLine(const std::wstring& actualContents=std::wstring()):
 		TextHolder(actualContents, false, 0) { }
 
-	virtual void writeToken(std::wostream& out) const { out << L"BlankLine: " << *text() << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"BlankLine: " << *text() << (wchar_t)'\n'; }
 
-	virtual bool isBlankLine() const { return true; }
+	bool isBlankLine() const override { return true; }
 };
 
 
@@ -208,9 +208,9 @@ class EscapedCharacter: public Token {
 	public:
 	EscapedCharacter(wchar_t c): mChar(c) { }
 
-	virtual void writeAsHtml(std::wostream& out) const { out << mChar; }
-	virtual void writeAsOriginal(std::wostream& out) const { out << (wchar_t)'\\' << mChar; }
-	virtual void writeToken(std::wostream& out) const { out << L"EscapedCharacter: " << mChar << (wchar_t)'\n'; }
+	void writeAsHtml(std::wostream& out) const override { out << mChar; }
+	void writeAsOriginal(std::wostream& out) const override { out << (wchar_t)'\\' << mChar; }
+	void writeToken(std::wostream& out) const override { out << L"EscapedCharacter: " << mChar << (wchar_t)'\n'; }
 
 	private:
 	const wchar_t mChar;
@@ -227,14 +227,14 @@ class Container: public Token {
 	void appendSubtokens(TokenGroup& tokens) { mSubTokens.splice(mSubTokens.end(), tokens); }
 	void swapSubtokens(TokenGroup& tokens) { mSubTokens.swap(tokens); }
 
-	virtual bool isContainer() const { return true; }
+	bool isContainer() const override { return true; }
 
-	virtual void writeAsHtml(std::wostream& out) const;
+	void writeAsHtml(std::wostream& out) const override;
 
-	virtual void writeToken(std::wostream& out) const { out << L"Container: error!" << (wchar_t)'\n'; }
-	virtual void writeToken(size_t indent, std::wostream& out) const;
+	void writeToken(std::wostream& out) const override { out << L"Container: error!" << (wchar_t)'\n'; }
+	void writeToken(size_t indent, std::wostream& out) const override;
 
-	virtual optional<TokenGroup> processSpanElements(const LinkIds& idTable);
+	optional<TokenGroup> processSpanElements(const LinkIds& idTable) override;
 
 	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new Container(newContents)); }
 	virtual std::wstring containerName() const { return L"Container"; }
@@ -252,14 +252,14 @@ class InlineHtmlBlock: public Container {
 		mSubTokens.push_back(TokenPtr(new InlineHtmlContents(contents)));
 	}
 
-	virtual bool inhibitParagraphs() const { return !mIsBlockTag; }
+	bool inhibitParagraphs() const override { return !mIsBlockTag; }
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new InlineHtmlBlock(newContents)); }
-	virtual std::wstring containerName() const { return L"InlineHtmlBlock"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new InlineHtmlBlock(newContents)); }
+	std::wstring containerName() const override { return L"InlineHtmlBlock"; }
 
 	// Inline HTML blocks always end with a blank line, so report it as one for
 	// parsing purposes.
-	virtual bool isBlankLine() const { return true; }
+	bool isBlankLine() const override { return true; }
 
 	private:
 	bool mIsBlockTag;
@@ -272,14 +272,14 @@ class ListItem: public Container {
 
 	void inhibitParagraphs(bool set) { mInhibitParagraphs=set; }
 
-	virtual bool inhibitParagraphs() const { return mInhibitParagraphs; }
+	bool inhibitParagraphs() const override { return mInhibitParagraphs; }
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new ListItem(newContents)); }
-	virtual std::wstring containerName() const { return L"ListItem"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new ListItem(newContents)); }
+	std::wstring containerName() const override { return L"ListItem"; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"<li>"; }
-	virtual void postWrite(std::wostream& out) const { out << L"</li>\n"; }
+	void preWrite(std::wostream& out) const override { out << L"<li>"; }
+	void postWrite(std::wostream& out) const override { out << L"</li>\n"; }
 
 	private:
 	bool mInhibitParagraphs;
@@ -289,12 +289,12 @@ class UnorderedList: public Container {
 	public:
 	UnorderedList(const TokenGroup& contents, bool paragraphMode=false);
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new UnorderedList(newContents)); }
-	virtual std::wstring containerName() const { return L"UnorderedList"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new UnorderedList(newContents)); }
+	std::wstring containerName() const override { return L"UnorderedList"; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"\n<ul>\n"; }
-	virtual void postWrite(std::wostream& out) const { out << L"</ul>\n\n"; }
+	void preWrite(std::wostream& out) const override { out << L"\n<ul>\n"; }
+	void postWrite(std::wostream& out) const override { out << L"</ul>\n\n"; }
 };
 
 class OrderedList: public UnorderedList {
@@ -302,24 +302,24 @@ class OrderedList: public UnorderedList {
 	OrderedList(const TokenGroup& contents, bool paragraphMode=false):
 		UnorderedList(contents, paragraphMode) { }
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new OrderedList(newContents)); }
-	virtual std::wstring containerName() const { return L"OrderedList"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new OrderedList(newContents)); }
+	std::wstring containerName() const override { return L"OrderedList"; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"<ol>\n"; }
-	virtual void postWrite(std::wostream& out) const { out << L"</ol>\n\n"; }
+	void preWrite(std::wostream& out) const override { out << L"<ol>\n"; }
+	void postWrite(std::wostream& out) const override { out << L"</ol>\n\n"; }
 };
 
 class BlockQuote: public Container {
 	public:
 	BlockQuote(const TokenGroup& contents): Container(contents) { }
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new BlockQuote(newContents)); }
-	virtual std::wstring containerName() const { return L"BlockQuote"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new BlockQuote(newContents)); }
+	std::wstring containerName() const override { return L"BlockQuote"; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"<blockquote>\n"; }
-	virtual void postWrite(std::wostream& out) const { out << L"\n</blockquote>\n"; }
+	void preWrite(std::wostream& out) const override { out << L"<blockquote>\n"; }
+	void postWrite(std::wostream& out) const override { out << L"\n</blockquote>\n"; }
 };
 
 class Paragraph: public Container {
@@ -327,12 +327,12 @@ class Paragraph: public Container {
 	Paragraph() { }
 	Paragraph(const TokenGroup& contents): Container(contents) { }
 
-	virtual TokenPtr clone(const TokenGroup& newContents) const { return TokenPtr(new Paragraph(newContents)); }
-	virtual std::wstring containerName() const { return L"Paragraph"; }
+	TokenPtr clone(const TokenGroup& newContents) const override { return TokenPtr(new Paragraph(newContents)); }
+	std::wstring containerName() const override { return L"Paragraph"; }
 
 	protected:
-	virtual void preWrite(std::wostream& out) const { out << L"<p>"; }
-	virtual void postWrite(std::wostream& out) const { out << L"</p>\n\n"; }
+	void preWrite(std::wostream& out) const override { out << L"<p>"; }
+	void postWrite(std::wostream& out) const override { out << L"</p>\n\n"; }
 };
 
 
@@ -343,12 +343,12 @@ class BoldOrItalicMarker: public Token {
 		mTokenCharacter(c), mSize(size), mMatch(0), mCannotMatch(false),
 		mDisabled(false), mId(-1) { }
 
-	virtual bool isUnmatchedOpenMarker() const { return (mOpenMarker && mMatch==0 && !mCannotMatch); }
-	virtual bool isUnmatchedCloseMarker() const { return (!mOpenMarker && mMatch==0 && !mCannotMatch); }
-	virtual bool isMatchedOpenMarker() const { return (mOpenMarker && mMatch!=0); }
-	virtual bool isMatchedCloseMarker() const { return (!mOpenMarker && mMatch!=0); }
-	virtual void writeAsHtml(std::wostream& out) const;
-	virtual void writeToken(std::wostream& out) const;
+	bool isUnmatchedOpenMarker() const override { return (mOpenMarker && mMatch==0 && !mCannotMatch); }
+	bool isUnmatchedCloseMarker() const override { return (!mOpenMarker && mMatch==0 && !mCannotMatch); }
+	bool isMatchedOpenMarker() const override { return (mOpenMarker && mMatch!=0); }
+	bool isMatchedCloseMarker() const override { return (!mOpenMarker && mMatch!=0); }
+	void writeAsHtml(std::wostream& out) const override;
+	void writeToken(std::wostream& out) const override;
 
 	bool isOpenMarker() const { return mOpenMarker; }
 	wchar_t tokenCharacter() const { return mTokenCharacter; }
@@ -376,9 +376,9 @@ class Image: public Token {
 	Image(const std::wstring& altText, const std::wstring& url, const std::wstring&
 		title): mAltText(altText), mUrl(url), mTitle(title) { }
 
-	virtual void writeAsHtml(std::wostream& out) const;
+	void writeAsHtml(std::wostream& out) const override;
 
-	virtual void writeToken(std::wostream& out) const { out << L"Image: " << mUrl << (wchar_t)'\n'; }
+	void writeToken(std::wostream& out) const override { out << L"Image: " << mUrl << (wchar_t)'\n'; }
 
 	private:
 	const std::wstring mAltText, mUrl, mTitle;

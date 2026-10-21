@@ -142,11 +142,11 @@ public:
 	vector<char> data;
 
 	// get the size of our data
-	virtual size_t GetDataSize() const
+	size_t GetDataSize() const override
 	{ return data.size() + 4 + sizeof(size_t); }
 
 	// copy our data to the buffer
-	virtual bool GetDataHere(void *buf) const {
+	bool GetDataHere(void *buf) const override {
 		// prepend 0xFFFFFFFF and the length (fixed crash under win98)
 		wxByte *b = (wxByte *)buf;
 		b[0] = b[1] = b[2] = b[3] = 0xFF;
@@ -158,7 +158,7 @@ public:
 	}
 
 	// copy data from buffer to our data
-	virtual bool SetData(size_t len, const void *buf) {
+	bool SetData(size_t len, const void *buf) override {
 		wxByte *b = (wxByte *)buf;
 		b += 4;
 		len = *((size_t*)b);
@@ -229,7 +229,7 @@ public:
 	explicit MadMouseMotionTimer(MadEdit *madedit): m_madedit(madedit)
 	{}
 
-	virtual void Notify() {
+	void Notify() override {
 		wxMouseEvent evt;
 		wxPoint pt = wxGetMousePosition();
 		pt = m_madedit->ScreenToClient(pt);
@@ -12085,7 +12085,7 @@ int MadEdit::GetUCharWidth(ucs4_t uc)
 {
 	if (uc > 0x10FFFF || uc < 0) uc = '?';
 
-	__REGISTER int idx = uc >> 16;
+	int idx = uc >> 16;
 	wxUint16 *widths = m_TextFontWidths[idx];
 
 	if (!widths)
@@ -12155,7 +12155,7 @@ int MadEdit::GetHexUCharWidth(ucs4_t uc)
 {
 	if (uc > 0x10FFFF || uc < 0) uc = '?';
 
-	__REGISTER int idx = uc >> 16;
+	int idx = uc >> 16;
 	wxUint16 *widths = m_HexFontWidths[idx];
 
 	if (!widths)

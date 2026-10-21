@@ -10,11 +10,7 @@
 #define _MADEDITAPP_H_
 #include "MadUtils.h"
 
-#if CPLUSEPLUSE98
-	#include <boost/shared_ptr.hpp>
-#else
-	#include <memory>
-#endif
+#include <memory>
 
 #include <wx/wxprec.h>
 
@@ -42,19 +38,19 @@ public:
 							const void * data,
 							size_t size,
 #endif
-							wxIPCFormat WXUNUSED(format));
+							wxIPCFormat WXUNUSED(format)) override;
 };
 
 class MadAppSrv : public wxServer
 {
 public:
-	virtual wxConnectionBase* OnAcceptConnection(const wxString& topic);
+	wxConnectionBase* OnAcceptConnection(const wxString& topic) override;
 };
 
 class MadAppClnt : public wxClient
 {
 public:
-	virtual wxConnectionBase* OnMakeConnection() {return new MadAppConn();}
+	wxConnectionBase* OnMakeConnection() override {return new MadAppConn();}
 };
 
 #if (wxUSE_ON_FATAL_EXCEPTION == 1) && (wxUSE_STACKWALKER == 1)
@@ -65,7 +61,7 @@ public:
 	MadStackWalker():m_DumpFile(nullptr) {}
 	void SetDumpFile(wxFile * file){m_DumpFile = file;}
 protected:
-	inline void OnStackFrame(const wxStackFrame & frame);
+	inline void OnStackFrame(const wxStackFrame & frame) override;
 };
 #endif
 
@@ -85,12 +81,12 @@ class MadEditApp:public wxApp
 
 public:
 	MadEditApp() : m_SigleAppChecker(nullptr), m_AppServer(nullptr), m_SilentMode(false), m_Exit(false), m_ForceEdit(false), m_Delimiter(wxT("*")) {}
-	virtual bool OnInit();
-	virtual int OnExit();
-	virtual void OnInitCmdLine(wxCmdLineParser& cmdParser);
-	virtual bool OnCmdLineParsed(wxCmdLineParser& cmdParser);
+	bool OnInit() override;
+	int OnExit() override;
+	void OnInitCmdLine(wxCmdLineParser& cmdParser) override;
+	bool OnCmdLineParsed(wxCmdLineParser& cmdParser) override;
 #if (wxUSE_ON_FATAL_EXCEPTION == 1) && (wxUSE_STACKWALKER == 1)
-	void OnFatalException();
+	void OnFatalException() override;
 #endif
 	void InitLocale();
 	void ShowMainFrame(MadEditFrame *mainFrame, bool maximize);

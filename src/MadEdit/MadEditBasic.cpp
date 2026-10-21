@@ -6,7 +6,7 @@
 // Licence:     GPL
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 #include <wx/filefn.h>
 #include <wx/fileconf.h>
 #include "MadEdit.h"
@@ -3484,7 +3484,7 @@ MadReplaceResult MadEdit::ReplaceTextNoDoubleCheck(const wxString &expr, const w
 	vector<wxFileOffset> ins_len;
 	list<ucs4string> outs;
 	MadCaretPos bpos, epos, endpos, obpos, oepos;
-	boost::scoped_ptr< ucs4string > fmtstr;
+	std::unique_ptr< ucs4string > fmtstr;
 	MadReplaceResult res = RR_NREP_NNEXT;
 
 	if (rangeFrom <= 0)
@@ -3624,7 +3624,7 @@ int MadEdit::ReplaceTextAll(const wxString &expr, const wxString &fmt,
 	vector<wxFileOffset> ins_len;
 	list<ucs4string> outs;
 	MadCaretPos bpos, epos, endpos, obpos, oepos;
-	boost::scoped_ptr< ucs4string > fmtstr;
+	std::unique_ptr< ucs4string > fmtstr;
 
 	if (rangeFrom <= 0)
 	{

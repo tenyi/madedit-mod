@@ -24,11 +24,7 @@
 #include <wx/confbase.h>
 
 #include "HunspellInterface.h"
-#if CPLUSEPLUSE98
-using boost::shared_ptr;
-#else
 using std::shared_ptr;
-#endif
 extern wxString g_MadEditHomeDir;
 extern wxString g_MadEditAppDir;
 

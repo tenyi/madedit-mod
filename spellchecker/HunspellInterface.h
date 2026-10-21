@@ -18,21 +18,6 @@
 */
 #ifndef __HUNSPELL_CHECK_INTERFACE__
 #define __HUNSPELL_CHECK_INTERFACE__
-#ifndef _MSC_VER 
-#if __cplusplus <= 199711L
-#define CPLUSEPLUSE98 1
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#else
-#if _MSC_VER < 1600
-#define CPLUSEPLUSE98 1
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#endif
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -64,30 +49,26 @@ public:
     ~HunspellInterface();
 
     // Spell Checker functions
-    virtual wxString GetSpellCheckEngineName()
+    wxString GetSpellCheckEngineName() override
     {
         return _T("Hunspell");
     }
-    virtual int InitializeSpellCheckEngine();
-    virtual int UninitializeSpellCheckEngine();
-    virtual int SetOption(SpellCheckEngineOption& Option);
-    virtual void UpdatePossibleValues(SpellCheckEngineOption& OptionDependency, SpellCheckEngineOption& OptionToUpdate);
-    virtual wxString CheckSpelling(wxString strText);
-    virtual bool IsSpellingOk(wxString strText);
-    wxArrayString GetSuggestions(const wxString& strMisspelledWord);
+    int InitializeSpellCheckEngine() override;
+    int UninitializeSpellCheckEngine() override;
+    int SetOption(SpellCheckEngineOption& Option) override;
+    void UpdatePossibleValues(SpellCheckEngineOption& OptionDependency, SpellCheckEngineOption& OptionToUpdate) override;
+    wxString CheckSpelling(wxString strText) override;
+    bool IsSpellingOk(wxString strText) override;
+    wxArrayString GetSuggestions(const wxString& strMisspelledWord) override;
 
-    virtual bool IsWordInDictionary(const wxString& strWord);
-    virtual bool IsWordInPersonalDictionary(const wxString& strWord);
-    virtual int AddWordToDictionary(const wxString& strWord);
-    virtual int RemoveWordFromDictionary(const wxString& strWord);
-    virtual wxArrayString GetWordListAsArray();
+    bool IsWordInDictionary(const wxString& strWord) override;
+    bool IsWordInPersonalDictionary(const wxString& strWord) override;
+    int AddWordToDictionary(const wxString& strWord) override;
+    int RemoveWordFromDictionary(const wxString& strWord) override;
+    wxArrayString GetWordListAsArray() override;
     void OpenPersonalDictionary(const wxString& strPersonalDictionaryFile=wxEmptyString);    
-    virtual void SetEnablePersonalDictionary(bool enable);
-#if CPLUSEPLUSE98
-    virtual void SetSyntaxDictionary(boost::shared_ptr<PersonalDictionary>& syntaxKeywordDict)
-#else
-    virtual void SetSyntaxDictionary(std::shared_ptr<PersonalDictionary>& syntaxKeywordDict)
-#endif
+    void SetEnablePersonalDictionary(bool enable) override;
+    void SetSyntaxDictionary(std::shared_ptr<PersonalDictionary>& syntaxKeywordDict) override
     {
         m_SyntaxKeywordDict = syntaxKeywordDict;
     }
@@ -100,8 +81,8 @@ public:
     {
         m_CustomMySpellDictionaryMap.clear();
     }
-    virtual wxString GetCharacterEncoding();
-    virtual int GetUserCorrection(const wxString& strMisspelling);
+    wxString GetCharacterEncoding() override;
+    int GetUserCorrection(const wxString& strMisspelling) override;
 
 private:
     void PopulateDictionaryMap(StringToStringMap* pLookupMap, const wxString& strDictionaryPath);
@@ -119,11 +100,7 @@ private:
     wxString m_strDictionaryPath;
 
     PersonalDictionary m_PersonalDictionary;
-#if CPLUSEPLUSE98
-    boost::shared_ptr<PersonalDictionary> m_SyntaxKeywordDict;
-#else
     std::shared_ptr<PersonalDictionary> m_SyntaxKeywordDict;
-#endif
     bool m_EnablePersonalDictionary;
 };
 

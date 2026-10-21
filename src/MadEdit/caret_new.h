@@ -25,7 +25,7 @@ class wxCaretTimerNew : public wxTimer
 {
 public:
 	explicit wxCaretTimerNew(wxCaretNew *caret);
-	virtual void Notify();
+	void Notify() override;
 
 private:
 	wxCaretNew *m_caret;
@@ -51,17 +51,17 @@ public:
 	// --------------
 
 	// called by wxWindow (not using the event tables)
-	virtual void OnSetFocus();
-	virtual void OnKillFocus();
+	void OnSetFocus() override;
+	void OnKillFocus() override;
 
 	// called by wxCaretTimerNew
 	void OnTimer();
 
 protected:
-	virtual void DoShow();
-	virtual void DoHide();
-	virtual void DoMove();
-	virtual void DoSize();
+	void DoShow() override;
+	void DoHide() override;
+	void DoMove() override;
+	void DoSize() override;
 
 	// blink the caret once
 	void Blink();

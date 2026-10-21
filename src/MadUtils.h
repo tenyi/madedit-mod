@@ -8,41 +8,9 @@
 
 #ifndef	_MADUTILS_H_
 #define	_MADUTILS_H_
-#ifndef _MSC_VER 
-#if __cplusplus <= 199711L
-#define CPLUSEPLUSE98 1
-#ifndef emplace_back
-#define emplace_back push_back
-#endif
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#if (__cplusplus - 0) >= 201703L
-  #define __REGISTER
-#else
-  #define __REGISTER                              register
-#endif
-#else
-#if _MSC_VER < 1600
-#define CPLUSEPLUSE98 1
-#ifndef emplace_back
-#define emplace_back push_back
-#endif
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#if ((_MSC_VER >= 1910) && (_MSC_VER <= 2000))
-  #define __REGISTER
-#else
-  #define __REGISTER                              register
-#endif
-#endif
 
 #include <wx/defs.h>
 #include <wx/event.h>
-#include <boost/noncopyable.hpp>
 
 struct HtmlColor
 {
@@ -58,9 +26,13 @@ extern void	SetHtmlColors(void);
 extern wxString	GetExecutablePath(void);
 extern wxString	g_MadEditRegkeyPath;
 
-class MadUniqueIDReserver : private boost::noncopyable
+class MadUniqueIDReserver
 {
 public:
+	// 單例（singleton），禁止複製；取代原本的 boost::noncopyable
+	MadUniqueIDReserver(const MadUniqueIDReserver&) = delete;
+	MadUniqueIDReserver& operator=(const MadUniqueIDReserver&) = delete;
+
 	long RecentFindTextID1(void) { return fid1; }
 	long RecentFindTextID20(void) { return fid20; }
 	long RecentReplaceTextID1(void) { return rid1; }

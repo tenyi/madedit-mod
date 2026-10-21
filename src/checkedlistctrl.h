@@ -12,21 +12,7 @@
 
 #ifndef _WX_CHECKEDLISTCTRL_H_
 #define _WX_CHECKEDLISTCTRL_H_
-#ifndef _MSC_VER 
-#if __cplusplus <= 199711L
-#define CPLUSEPLUSE98 1
-#include <boost/shared_ptr.hpp>
-#else 
 #include <memory>
-#endif
-#else
-#if _MSC_VER < 1600
-#define CPLUSEPLUSE98 1
-#include <boost/shared_ptr.hpp>
-#else 
-#include <memory>
-#endif
-#endif
 // wxWidgets headers
 #include <wx/listctrl.h>
 #include <wx/imaglist.h>
@@ -132,7 +118,7 @@ public:			// utilities
     // this needs to be redeclared otherwise it's hidden by our other Enable() function.
     // However you should use #EnableAll instead of this function if you want to get
     // good graphics (try to understand)
-    virtual bool Enable(bool enable = true)
+    bool Enable(bool enable = true) override
         { return wxListCtrl::Enable(enable); }
 
     // shortcuts to the GetItemState function

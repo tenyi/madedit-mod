@@ -974,7 +974,7 @@ public:
 	}
 	~MadDropTarget() {}
 private:
-	virtual wxDragResult OnData(wxCoord WXUNUSED(x), wxCoord WXUNUSED(y), wxDragResult defResult)
+	wxDragResult OnData(wxCoord WXUNUSED(x), wxCoord WXUNUSED(y), wxDragResult defResult) override
 	{
 		if (GetData())
 		{
@@ -1786,7 +1786,7 @@ class MadFontEnumerator : public wxFontEnumerator
 {
 	wxArrayString m_facenames_lowercase;
 public:
-	virtual bool OnFacename(const wxString& facename) {
+	bool OnFacename(const wxString& facename) override {
 		size_t count = m_facenames_lowercase.Count();
 
 		if (count == 0) {

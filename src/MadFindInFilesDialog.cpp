@@ -629,7 +629,7 @@ public:
 
 		return wxDIR_CONTINUE;
 	}
-	virtual wxDirTraverseResult OnFile(const wxString& filename) {
+	wxDirTraverseResult OnFile(const wxString& filename) override {
 		bool exclude = false;
 
 		if (!g_ExcludeFilters.empty()) {
@@ -658,7 +658,7 @@ public:
 
 		return Continue();
 	}
-	virtual wxDirTraverseResult OnDir(const wxString& WXUNUSED(dirname)) {
+	wxDirTraverseResult OnDir(const wxString& WXUNUSED(dirname)) override {
 		return Continue();
 	}
 };

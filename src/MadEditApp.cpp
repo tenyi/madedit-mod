@@ -128,10 +128,10 @@ public:
 		m_TransName(transName), m_LanguageIdNameMap(langIdNameMap)
 	{}
 	~MadTranslationHelper() {};
-	virtual wxDirTraverseResult OnFile(const wxString& WXUNUSED(filename)) {
+	wxDirTraverseResult OnFile(const wxString& WXUNUSED(filename)) override {
 		return wxDIR_CONTINUE;
 	}
-	virtual wxDirTraverseResult OnDir(const wxString& dirName) {
+	wxDirTraverseResult OnDir(const wxString& dirName) override {
 		const wxLanguageInfo * langinfo;
 		langinfo = wxLocale::FindLanguageInfo(dirName.AfterLast(wxFileName::GetPathSeparator()));
 

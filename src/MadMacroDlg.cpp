@@ -51,7 +51,7 @@ public:
   }
 
   // override streambuf method
-  int_type overflow(int_type i) wxOVERRIDE
+  int_type overflow(int_type i) override
   {
    m_text->AppendText((wxChar)i);
    return 0;

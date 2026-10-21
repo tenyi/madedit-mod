@@ -1,20 +1,5 @@
 #ifndef __SPELL_CHECK_ENGINE_INTERFACE__
 #define __SPELL_CHECK_ENGINE_INTERFACE__
-#ifndef _MSC_VER 
-#if __cplusplus <= 199711L
-#define CPLUSEPLUSE98 1
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#else
-#if _MSC_VER < 1600
-#define CPLUSEPLUSE98 1
-#ifndef nullptr
-#define nullptr (0)
-#endif
-#endif
-#endif
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
 
@@ -34,14 +19,7 @@
 #pragma warning(disable:4786)
 #endif
 
-#if CPLUSEPLUSE98
-#include <boost/shared_ptr.hpp>
-#ifndef nullptr
-	#define nullptr (0)
-#endif
-#else
 #include <memory>
-#endif
 
 WX_DECLARE_STRING_HASH_MAP(wxString, StringToStringMap);
 WX_DECLARE_STRING_HASH_MAP(SpellCheckEngineOption, OptionsMap);
@@ -82,11 +60,7 @@ public:
     virtual int InitializeSpellCheckEngine() = 0;
     virtual int UninitializeSpellCheckEngine() = 0;
     virtual int SetOption(SpellCheckEngineOption& Option) = 0;
-#if CPLUSEPLUSE98
-    virtual void SetSyntaxDictionary(boost::shared_ptr<PersonalDictionary>& syntaxKeywordDict) = 0;
-#else
     virtual void SetSyntaxDictionary(std::shared_ptr<PersonalDictionary>& syntaxKeywordDict) = 0;
-#endif
     virtual bool AddOptionToMap(SpellCheckEngineOption& option);
     virtual void ApplyOptions();  // Go through all the options in the options map and apply them to the spell check engine
     OptionsMap* GetOptions()

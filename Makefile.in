@@ -1539,7 +1539,7 @@ AM_CPPFLAGS = -DPy_NO_ENABLE_SHARED -DBOOST_PYTHON_STATIC_LIB -DHUNSPELL_STATIC 
 -I$(top_srcdir)/astyle/astyle -I$(top_srcdir)/src/MadEdit -I$(top_srcdir)/python/include \
 -I$(top_srcdir)/python/include/boost/python -I$(top_srcdir)/json
 
-madedit_CXXFLAGS = -DDATA_DIR=\"${datadir}\"
+madedit_CXXFLAGS = -std=gnu++17 -DDATA_DIR=\"${datadir}\"
 madedit_SOURCES = src/MadAboutDialog.cpp src/MadAboutDialog.h \
 	src/MadCommand.h src/MadConvEncDialog.cpp \
 	src/MadConvEncDialog.h src/MadEditApp.cpp src/MadEditApp.h \

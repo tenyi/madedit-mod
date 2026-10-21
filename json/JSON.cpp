@@ -488,11 +488,11 @@ namespace JSON
 	{
 	}
 
-	Exception::~Exception() throw()
+	Exception::~Exception() noexcept
 	{
 	}
 
-	const char * Exception::what() const throw()
+	const char * Exception::what() const noexcept
 	{
 	return reason.c_str();
 	}

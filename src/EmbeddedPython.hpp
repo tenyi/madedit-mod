@@ -17,18 +17,15 @@
 	#define BOOST_PYTHON_STATIC_LIB
 #endif
 #include "../python/include/boost/python.hpp"
-#include <boost/function.hpp>
 
+#include <functional>
 #include <iostream>
 #include <string>
 #include <memory>
 
-#if __cplusplus >= 201703L
-template <typename T>
-using auto_ptr = std::unique_ptr<T>;
-#else
-using std::auto_ptr;
-#endif
+// 原本用 __cplusplus 判斷 C++17 才把 auto_ptr 別名成 unique_ptr，
+// 但 MSVC 沒加 /Zc:__cplusplus 時 __cplusplus 永遠是 199711L，會誤用已移除的 std::auto_ptr。
+// 現在所有平台都至少是 C++17，直接用 std::unique_ptr（Boost.Python 的 make_constructor 支援）。
 
 namespace py = ::boost::python;
 
@@ -49,7 +46,7 @@ namespace embedded_python {
 		py_redirector()
 		{ }
 
-		explicit py_redirector(boost::function<void (const std::string&)> f)
+		explicit py_redirector(std::function<void (const std::string&)> f)
 			: m_write_fn(f)
 		{ }
 
@@ -61,22 +58,22 @@ namespace embedded_python {
 		}
 
 	public:
-		boost::function<void (const std::string&)> m_write_fn;
+		std::function<void (const std::string&)> m_write_fn;
 	};
 
 	typedef py_redirector<STDOUT>   stdout_redirector;
 	typedef py_redirector<STDERR>   stderr_redirector;
 
 
-	static auto_ptr<stdout_redirector> make_stdout_redirector()
+	static std::unique_ptr<stdout_redirector> make_stdout_redirector()
 	{
-		auto_ptr<stdout_redirector> ptr(new stdout_redirector(PrintString));
+		std::unique_ptr<stdout_redirector> ptr(new stdout_redirector(PrintString));
 		return ptr;
 	}
 
-	static auto_ptr<stderr_redirector> make_stderr_redirector()
+	static std::unique_ptr<stderr_redirector> make_stderr_redirector()
 	{
-		auto_ptr<stderr_redirector> ptr(new stderr_redirector(PrintString));
+		std::unique_ptr<stderr_redirector> ptr(new stderr_redirector(PrintString));
 		return ptr;
 	}
 }
