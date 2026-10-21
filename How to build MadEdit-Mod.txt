@@ -1,27 +1,136 @@
 Requirements
 ============
-* Install developing tools gcc, gcc-c++, gdb, gtk+2/gtk+3, gettext, automake,
-  autoconf, aclocal, git, make and rpm-build if you want a rpm package
+* Autotools: autoconf 2.69, automake 1.16, libtool, gettext-devel, m4
+* A C/C++ toolchain (GCC or Clang) and make
+* wxWidgets 3.3 or later, built with UNICODE support
+  (the source uses wxWidgets 3.3 APIs such as wxList::compatibility_iterator
+   and wxAuiNotebookPageArray)
+* Boost headers (Boost.Xpressive and Boost.Python headers are used;
+  no Boost binary library is required, the Boost.Python implementation
+  is bundled in the python/ directory)
 
-* Install gtk+2-devel/gtk+3-devel, gettext-devel
+The wxWidgets and pkg-config macros used by autoconf are bundled in the
+m4/ directory (m4/wxwin.m4 and m4/pkg.m4), so a system-wide installation
+of wxwin.m4 is no longer required.
 
-* Install wxGTK3
+Building on Linux
+=================
+* Install the development packages, for example on Debian/Ubuntu:
 
-* copy wxwin.m4 to usr/share/acloXXX/ or Install wxGTK-devel
+    apt install build-essential autoconf automake libtool gettext \
+        libgtk-3-dev libwxgtk3.2-dev libboost-dev
 
-* Install wx-common for ubuntu
+* Bootstrap and build:
 
-Compile wxWidgets and boost_python
-============
-* Get boost 1.70
-* Get latest code from sourceforge
-  git clone https://github.com/LiMinggang/madedit-mod.git
+    sh ./autogen.sh
+    ./configure
+    make
+    make install
 
-Compile MadEdi-Mod from source code
-============
-* Compile madedit-mod by configure or packaging script
-  configure --with-boost=${HOME}/boost_1_70_0
+  wxWidgets is detected with wx-config.  The GTK+/glib flags are only
+  added when the wxWidgets build actually uses the GTK port, so a
+  wxWidgets built against GTK2/GTK3 is used as is.
 
-  Or
+Building on Windows (MSYS2 / MinGW-w64, x86_64)
+==============================================
+The most convenient way is the autotools build under MSYS2, because it
+is the same build system that is used on Linux and macOS.
 
-  cd packaging/rpm && makerpm.sh
+* Install MSYS2 and the required packages from the "MSYS2 UCRT64" shell:
+
+    pacman -S mingw-w64-ucrt-x86_64-wxwidgets3.3-msw \
+               mingw-w64-ucrt-x86_64-boost \
+               autoconf2.69 automake1.16 gettext-devel libtool
+
+* Build:
+
+    sh msw/build-msys2.sh
+
+  The script regenerates configure/Makefile.in when needed, runs
+  ./configure and make, and finally assembles dist/.  The result is
+  ./madedit.exe and a self-contained ./dist/ folder that can be copied
+  to any Windows machine.
+
+  Add --enable-debug to get a build with debug info and assertions
+  instead of the default release build (-O2 -DNDEBUG).
+
+  madedit.exe needs the wxWidgets DLLs at runtime; they are copied
+  into dist/ next to the executable, so no PATH setup is needed there.
+  When running ./madedit.exe straight from the build tree, /ucrt64/bin
+  has to be in PATH (it is by default inside the UCRT64 shell).
+
+  The dist/ layout follows what the Windows build looks for relative to
+  the executable:
+
+    dist/madedit.exe
+    dist/syntax/        syntax highlighting definitions
+    dist/scripts/       MadPython macro scripts
+    dist/Dictionaries/  hunspell dictionaries
+    dist/locale/        translations (<lang>/LC_MESSAGES/madedit-mod.mo)
+    dist/*.dll          wxWidgets and MinGW runtime DLLs
+
+  Notes about the MinGW build:
+  - MadEdit is a single instance application.  If an instance is already
+    running, a newly started copy only forwards its command line to the
+    running one and exits, so a fresh build may appear to do nothing
+    (and an old instance may keep showing an outdated warning dialog).
+    Kill the running instance before testing a new build.
+  - The minipython sources are compiled as C17 (-std=gnu17).  GCC 14 and
+    later default to C23, where bool/false/true became keywords and
+    K&R style function definitions were removed, which breaks the
+    Python 2.7 sources.
+  - Py_NO_ENABLE_SHARED is defined, otherwise pyconfig_win.h declares
+    the Python API with __declspec(dllimport) even though minipython is
+    linked statically.  The same applies to BOOST_PYTHON_STATIC_LIB and
+    HUNSPELL_STATIC.
+  - wxWidgets resources are compiled into the executable with windres:
+    wx_manifest_res.rc pulls in the Windows manifest (Common Controls v6
+    and per-monitor-v2 DPI awareness) and src/MadEditApp.rc provides the
+    application icon (images/Mad2.ico), the version information and the
+    wxWidgets standard icons and cursors.  Without them wxWidgets shows a
+    "wxWidgets Warning" dialog on startup and the application has no
+    icon.
+  - The icon resources and the manifest have to be compiled into two
+    separate resource objects: when ld merges two .rsrc sections it does
+    not renumber the RT_ICON ids, so both objects would start at id 1
+    and the icons would end up pointing at each other's images.
+  - The executable uses the console subsystem, like the Visual Studio
+    build, so a console window accompanies the editor window.
+
+Building on Windows (MSVC)
+==========================
+The Visual Studio projects are in msw/vc17 (VS 2022 and newer).  Open
+msw/vc17/MadEdit.sln and build the Release|x64 configuration.  They
+expect:
+  * WXWIN  - an unpacked wxWidgets MSW build (include\ and lib\vc_x64_lib)
+  * BOOST_ROOT - the Boost headers
+The project builds minipython, the bundled Boost.Python and hunspell
+itself.
+
+Building on macOS
+=================
+The autotools build is used on macOS as well:
+
+    sh ./autogen.sh
+    ./configure
+    make
+
+Requirements:
+  * wxWidgets 3.3 or later, built for macOS (the Cocoa port)
+  * Boost headers (Boost.Xpressive and Boost.Python headers)
+  * Xcode command line tools
+
+Notes:
+  * macOS uses the wxWidgets Cocoa port, so neither GTK+ nor X11 is
+    required; configure only adds the GTK+/glib and -lX11 flags when the
+    wxWidgets build actually uses the GTK port.
+  * The default file system of macOS is case insensitive.  The VERSION
+    file at the top of the source tree was therefore renamed to
+    VERSION.txt: on a case insensitive file system "VERSION" shadows the
+    C++20 standard header <version>, which breaks every translation unit
+    that includes <boost/config.hpp>.
+  * minipython/Modules/getpath.c is used on macOS; it contains the
+    mach-o/dyld based path detection.
+  * The bundled astyle 3.5.1 requires C++17, so the C++ compiler must be
+    invoked with -std=c++17 or newer (clang defaults to gnu++17 since
+    Xcode 15).

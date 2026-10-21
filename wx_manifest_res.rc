@@ -1,0 +1,20 @@
+///////////////////////////////////////////////////////////////////////////////
+// Name:		wx_manifest_res.rc
+// Description: 把 Windows manifest 編進 MadEdit-Mod 的執行檔
+// Licence: 	GPL
+///////////////////////////////////////////////////////////////////////////////
+
+// 這個 manifest 指定使用 Common Controls Library v6，並啟用
+// Per-Monitor V2 的 DPI 感知。少了它，wxWidgets 啟動時會跳出
+// 「wxWidgets Warning」視窗，Windows 控制項也會用舊樣式。
+//
+// 為什麼要獨立成一個資源物件？
+// 因為 src/MadEditApp.rc 已經提供了 RT_ICON。若把兩份資源交給不同的
+// windres 呼叫，GNU ld 合併 .rsrc 段時不會重新編號 RT_ICON，
+// 兩邊都從 ID 1 開始配，結果會互相蓋掉，圖示就會指到錯誤的圖像。
+// 所以這裡只放 manifest（RT_MANIFEST），不碰圖示資源，兩邊就不會衝突。
+//
+// 檔案路徑由 wx-config 提供的 include 路徑解析（見 Makefile.am 的
+// WX_RC_INCLUDE_FLAGS）。
+
+1                       24                      "wx/msw/wx_dpi_aware_pmv2.manifest"

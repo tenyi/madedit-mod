@@ -1,7 +1,19 @@
 SUBDIRS = syntax po scripts
 
+# aclocal 需要在 m4/ 裡找到 wxWidgets 的 wxwin.m4 巨集，
+# 否則重新產生 aclocal.m4 時會遺漏 AM_PATH_WXCONFIG 等巨集。
+ACLOCAL_AMFLAGS = -I m4
+
+# minipython 是 Python 2.7 的 C 原始碼。
+# GCC 14 以上預設使用 C23，而 C23 把 bool/false/true 變成關鍵字、
+# 並移除了 K&R 風格的函式定義，會讓這些舊原始碼編譯失敗，
+# 因此這裡明確指定用 C17 編譯。
+AM_CFLAGS = -std=gnu17
+
 bin_PROGRAMS = madedit
-AM_CPPFLAGS = -I$(top_srcdir)/charset-detector/src \
+AM_CPPFLAGS = -DPy_NO_ENABLE_SHARED -DBOOST_PYTHON_STATIC_LIB -DHUNSPELL_STATIC \
+-I$(top_srcdir)/minipython/Include -I$(top_srcdir)/minipython/PC \
+-I$(top_srcdir)/charset-detector/src \
 -I$(top_srcdir)/spellchecker -I$(top_srcdir)/spellchecker/hunspell/src \
 -I$(top_srcdir)/spellchecker/hunspell/src/hunspell -I$(top_srcdir)/spellchecker/hunspell/src/win_api \
 -I$(top_srcdir)/minipython/Include -I$(top_srcdir)/minipython/Python \
@@ -325,30 +337,19 @@ madedit_SOURCES =	src/MadAboutDialog.cpp \
 	minipython/Parser/tokenizer.h \
 	minipython/Python/importdl.h \
 	minipython/Python/thread_pthread.h \
-	minipython/Modules/_io/_iomodule.c \
 	minipython/Modules/_io/_iomodule.h \
-	minipython/Modules/_io/bufferedio.c \
-	minipython/Modules/_io/bytesio.c \
-	minipython/Modules/_io/fileio.c \
-	minipython/Modules/_io/iobase.c \
-	minipython/Modules/_io/stringio.c \
-	minipython/Modules/_io/textio.c \
 	minipython/Modules/_codecsmodule.c \
 	minipython/Modules/_math.c \
 	minipython/Modules/_sre.c \
 	minipython/Modules/_struct.c \
 	minipython/Modules/_weakref.c \
 	minipython/Modules/binascii.c \
-	minipython/Modules/posixmodule.c \
 	minipython/Modules/sre.h \
 	minipython/Modules/sre_constants.h \
-	minipython/Modules/timemodule.c \
 	minipython/Modules/errnomodule.c \
 	minipython/Modules/future_builtins.c \
 	minipython/Modules/gcmodule.c \
 	minipython/Modules/getbuildinfo.c \
-	minipython/Modules/getpath.c \
-	minipython/Modules/config.c \
 	minipython/Modules/mathmodule.c \
 	minipython/Modules/parsermodule.c \
 	minipython/Modules/stropmodule.c \
@@ -422,6 +423,7 @@ madedit_SOURCES =	src/MadAboutDialog.cpp \
 	minipython/Parser/parser.c \
 	minipython/Parser/parsetok.c \
 	minipython/Parser/tokenizer.c \
+	minipython/PC/config.c \
 	minipython/Python/_warnings.c \
 	minipython/Python/asdl.c \
 	minipython/Python/ast.c \
@@ -713,6 +715,37 @@ madedit_SOURCES =	src/MadAboutDialog.cpp \
 	json/JSON.cpp \
 	json/JSON.h
 
+# minipython 的平台相依來源檔。
+# Windows 與 Unix/macOS 必須各選一套，同時編譯兩套會讓
+# _PyImport_Inittab、getpath 等符號重複定義而無法連結。
+if BUILD_WINDOWS
+madedit_SOURCES += minipython/PC/getpathp.c
+else
+madedit_SOURCES += minipython/Modules/getpath.c
+endif
+
+# 把 Windows 資源編進執行檔（只限 Windows）。
+#
+# 圖示資源與 manifest 必須分開成兩個資源物件：GNU ld 合併 .rsrc 段時
+# 不會重新編號 RT_ICON，兩個 .o 若都含圖示，資源 ID 會互相蓋掉，
+# 造成「圖示指向錯誤的圖像」（Mad2.ico 被 wx 的 std.ico 取代）。
+if BUILD_WINDOWS
+madedit_LDADD = wx_manifest_res.$(OBJEXT) madedit_app_res.$(OBJEXT)
+
+# Windows manifest：指定使用 Common Controls Library v6，並啟用
+# Per-Monitor V2 的 DPI 感知。少了它，wxWidgets 啟動時會跳警告視窗，
+# 控制項也會用舊樣式。
+wx_manifest_res.$(OBJEXT): $(srcdir)/wx_manifest_res.rc
+	$(AM_V_GEN)$(WINDRES) $(WINDRESFLAGS) $(WX_RC_INCLUDE_FLAGS) \
+		-I$(srcdir) -O coff -o $@ $(srcdir)/wx_manifest_res.rc
+
+# MadEdit 自己的資源檔：應用程式圖示（images/Mad2.ico）、版本資訊，
+# 以及 wxWidgets 的標準圖示與游標。
+madedit_app_res.$(OBJEXT): $(srcdir)/src/MadEditApp.rc
+	$(AM_V_GEN)$(WINDRES) $(WINDRESFLAGS) $(WX_RC_INCLUDE_FLAGS) \
+		-I$(srcdir)/src -O coff -o $@ $(srcdir)/src/MadEditApp.rc
+endif
+
 dist_doc_DATA = gpl-3.0.txt README.txt help/MadPython.txt help/Help.txt help/KeyMapping.html help/RegexReference.html
 pixmapsdir = $(datadir)/pixmaps
 pixmaps_DATA = madedit.xpm
@@ -720,7 +753,7 @@ pixmaps_DATA = madedit.xpm
 appdir = $(datadir)/applications
 app_DATA = madedit.desktop
 
-EXTRA_DIST = m4/ChangeLog  $(pixmaps_DATA) $(app_DATA)
+EXTRA_DIST = m4/ChangeLog  $(pixmaps_DATA) $(app_DATA) wx_manifest_res.rc
 
 noinst_HEADERS =	description-pak \
 	README.txt \
@@ -764,9 +797,15 @@ noinst_HEADERS =	description-pak \
 	src/plugin_example/vc_cl.bat \
 	src/plugin_example/wxwin16x16.xpm \
 	minipython/Python/thread_nt.h \
-	minipython/PC/config.c \
+	minipython/Modules/config.c \
+	minipython/Modules/_io/_iomodule.c \
+	minipython/Modules/_io/bufferedio.c \
+	minipython/Modules/_io/bytesio.c \
+	minipython/Modules/_io/fileio.c \
+	minipython/Modules/_io/iobase.c \
+	minipython/Modules/_io/stringio.c \
+	minipython/Modules/_io/textio.c \
 	minipython/PC/dl_nt.c \
-	minipython/PC/getpathp.c \
 	minipython/PC/import_nt.c \
 	minipython/Python/dynload_win.c \
 	minipython/PC/errmap.h \

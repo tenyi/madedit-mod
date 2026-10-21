@@ -28,6 +28,30 @@
 # Logs
 *.log
 
+# Autotools build artifacts
+/Makefile
+/dist/
+/config.h
+/config.log
+/config.status
+/confdefs.h
+/compile
+/madedit.cfg
+/FontWidth.dat
+/madedit-screenshot.png
+/stamp-h1
+/autom4te.cache/
+/po/Makefile
+/po/Makefile.in
+/po/POTFILES
+/po/*.gmo
+/po/*.pot
+/po/remove-potcdate.sed
+/scripts/Makefile
+/syntax/Makefile
+.deps/
+.dirstamp
+
 prj
 msw/vc14.1/*.user
 msw/vc14.1/*.ncb

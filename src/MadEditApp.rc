@@ -15,9 +15,16 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-APPICON                 ICON                    "../images/Mad2.ico"
+//
+// ID 1 是 Windows 替 .exe 挑檔案圖示（檔案總管、工作列）時的預設位置，
+// 沒有它的話就會被 wxWidgets 的 std.ico 搶走。
+1                       ICON                    "../images/Mad2.ico"
 
-APPICON2                ICON                    "../images/Mad.ico"
+// 具名資源 "appicon" 是 MadEditFrame.cpp 執行時用來設定視窗圖示的
+// （SetIcon(wxIcon(wxT("appicon")))）。
+appicon                 ICON                    "../images/Mad2.ico"
+
+appicon2                ICON                    "../images/Mad.ico"
 
 WXICON_AAA              ICON                    "wx/msw/std.ico"
 
