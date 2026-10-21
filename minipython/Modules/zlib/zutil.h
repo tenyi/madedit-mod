@@ -130,7 +130,12 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  endif
 #endif
 
-#if defined(MACOS) || defined(TARGET_OS_MAC)
+#if defined(MACOS) || (defined(TARGET_OS_MAC) && !defined(__APPLE__))
+/* 這個分支是給 classic Mac OS 9 的：它沒有 fdopen()，所以用巨集擋掉。
+ * 現代 macOS 的 <TargetConditionals.h> 也會定義 TARGET_OS_MAC，但 macOS
+ * 其實有 fdopen()，而且這個巨集會讓 <stdio.h> 裡的 fdopen 宣告編譯失敗
+ * （expected identifier or '('）。所以用 __APPLE__ 把它排除掉，
+ * 現代 macOS 改由下面的 __APPLE__ 分支（OS_CODE 19）處理。 */
 #  define OS_CODE  7
 #  ifndef Z_SOLO
 #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os

@@ -9,7 +9,10 @@
 #define ZCONF_H
 
 #ifdef HAVE_CONFIG_H
-#include "../../../config.h"
+/* 原本寫成 "../../../config.h"，那個相對路徑只有在 source tree 內建置時
+ * 才會指向專案根目錄的 config.h。改成 "config.h" 之後由編譯器的 -I 搜尋
+ * 路徑決定，out-of-tree（VPATH）建置也能找到同一份設定檔。 */
+#include "config.h"
 #endif
 /*
  * If you *really* need a unique prefix for all types and library functions,
