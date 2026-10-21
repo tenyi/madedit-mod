@@ -257,7 +257,10 @@ public:
 	};
 	static wxColor ms_RulerColor;
 	static wxColor ms_GradationColor;
-	static wxFont ms_RulerFont;
+	// 尺規字型不能是全域 wxFont：在靜態初始化階段建構 wxFont 會用到
+	// wxWidgets 的內部狀態（wxTopLevelWindows），靜態連結 wxWidgets 時
+	// 初始化順序會讓程式在啟動前就崩潰。改成延後初始化。
+	static wxFont& GetRulerFont();
 private:
 	friend class MadSyntax;
 	friend class MadEncoding;

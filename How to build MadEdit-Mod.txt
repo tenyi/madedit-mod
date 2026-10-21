@@ -31,6 +31,25 @@ Building on Linux
   added when the wxWidgets build actually uses the GTK port, so a
   wxWidgets built against GTK2/GTK3 is used as is.
 
+* Two helper scripts are provided:
+
+    sh linux/build-linux.sh
+
+  builds the program and installs it into ~/.local (the executable ends up
+  in ~/.local/bin, the translations in ~/.local/share/locale and the
+  syntax/ and scripts/ directories next to the executable).
+
+    sh linux/build-release.sh
+
+  creates the release archive
+
+      dist/MadEdit-Mod-<version>-linux-x86_64.tar.gz
+
+  with the same layout as the Windows archives (see "Where wxWidgets 3.3
+  looks for the translations" below).  It links wxWidgets statically, so
+  the only runtime requirement is GTK3; pass --upload to publish the
+  archive with "gh release upload".
+
 Building on Windows (MSYS2 / MinGW-w64, x86_64)
 ==============================================
 The most convenient way is the autotools build under MSYS2, because it
@@ -185,7 +204,7 @@ macos/build-macos.sh produces MadEdit.app with this layout:
     MadEdit.app/Contents/Resources/syntax/          syntax highlighting
     MadEdit.app/Contents/Resources/scripts/         MadPython macros
     MadEdit.app/Contents/Resources/Dictionaries/    hunspell dictionaries
-    MadEdit.app/Contents/Resources/locale/          translations
+    MadEdit.app/Contents/Resources/share/locale/    translations
     MadEdit.app/Contents/Resources/MadEdit.icns     the icon
     MadEdit.app/Contents/Info.plist
 
@@ -193,6 +212,10 @@ The executable looks for its data files in the directory it lives in, so on
 macOS the program redirects that lookup to Contents/Resources when it detects
 that it is running from a bundle.  Drag the whole MadEdit.app into the
 Applications folder and it is ready to use.
+
+The translations are the one exception: they go into Resources/share/locale/
+instead of Resources/locale/, because that is where wxWidgets 3.3 looks for
+them.  See "wxWidgets 3.3 notes" below.
 
 By default the executable links against the wxWidgets and gettext libraries
 in Homebrew, so the .app only runs on a machine that has the same libraries
@@ -232,4 +255,114 @@ with the notebook as its parent, otherwise AddPage() fails and no page is
 ever shown.  MadEdit creates its editor pages with the frame as the parent
 (wx 2.8 reparented them automatically), so the parent was changed to the
 notebook in src/MadEditFrame.cpp.
+
+Where wxWidgets 3.3 looks for the translations
+-----------------------------------------------
+MadEdit's own interface strings live in po/*.po and are compiled into
+"madedit-mod.mo".  wxWidgets 3.3 looks for such a message catalog in a
+different place than wxWidgets 3.2 did, and getting this wrong is easy to
+miss because the program still starts and most of the window still looks
+right.
+
+* A message catalog is searched for in a list of "prefix" directories.
+  wxWidgets 3.3 uses these prefixes, in this order:
+
+    1. the directories registered by the program itself with
+       wxLocale::AddCatalogLookupPathPrefix()
+    2. wxStandardPaths::Get().GetResourcesDir()
+    3. <install prefix>/share/locale
+       -- only on the platforms that define wxHAS_STDPATHS_INSTALL_PREFIX,
+          i.e. Linux, NOT macOS and NOT Windows
+    4. the directories listed in the LC_PATH environment variable
+    5. <wxWidgets install prefix>/share/locale
+       -- the prefix wxWidgets itself was installed in, fixed at compile time
+
+  Inside every prefix wxWidgets looks for
+
+      <prefix>/<language>/LC_MESSAGES/<domain>.mo
+      <prefix>/<language>/<domain>.mo
+
+  and on macOS additionally for
+
+      <prefix>/<language>.lproj/LC_MESSAGES/<domain>.mo
+
+* On Linux the <install prefix> of point 3 is guessed from the path of the
+  executable: everything before the last "/bin/" in it.  If the path does not
+  contain "/bin/" at all, the prefix falls back to "/usr/local".  So
+
+      /usr/local/bin/madedit   ->  /usr/local/share/locale
+      ~/.local/bin/madedit     ->  ~/.local/share/locale
+      <folder>/madedit         ->  /usr/local/share/locale   (no "/bin/"!)
+
+  This is why the translations must NOT be put into a "share/locale"
+  directory next to a portable executable: wxWidgets would not look there.
+
+* MadEdit registers a prefix of its own, so it does not depend on that
+  guess: ScanForLocales()/InitLocale() in src/MadEditApp.cpp add
+
+      <application directory>/locale/
+
+  to the list via wxLocale::AddCatalogLookupPathPrefix().  The layout of the
+  release archives is therefore:
+
+      Windows: MadEdit-Mod-<version>-win32/madedit.exe
+               MadEdit-Mod-<version>-win32/locale/<lang>/LC_MESSAGES/madedit-mod.mo
+
+      Linux:   MadEdit-Mod-<version>-linux-x86_64/madedit
+               MadEdit-Mod-<version>-linux-x86_64/locale/<lang>/LC_MESSAGES/madedit-mod.mo
+
+      macOS:   MadEdit.app/Contents/MacOS/MadEdit
+               MadEdit.app/Contents/Resources/locale/<lang>/LC_MESSAGES/madedit-mod.mo
+
+  (on macOS the application directory is the "Resources" directory of the
+  bundle, see the __WXMAC__ block in MadEditApp::OnInit()).
+
+  Note that MadEdit deliberately does not call
+  wxStandardPaths::SetInstallPrefix(): that method only exists on Linux
+  (it would not even compile on macOS), and overriding the guessed prefix
+  would break the normal "make install" layout (<prefix>/share/locale),
+  which is still searched on Linux.
+
+* The syntax/ and scripts/ directories are looked up relative to the
+  application directory as well, so they stay next to the executable in all
+  the archives above.
+
+* How the mistake shows up: wxWidgets loads its own catalog ("wxstd-3.3.mo")
+  from the wxWidgets installation prefix, so the strings that wxWidgets also
+  translates ("File", "Window", "Help", ...) still appear in the selected
+  language, while the strings that only MadEdit has ("Search", "Tools",
+  "Macro", "Plain Text", ...) fall back to English.  A half-translated
+  interface is therefore a sign that the .mo file was not found.
+
+Finding the application directory
+---------------------------------
+All data files (syntax/, scripts/, locale/, Dictionaries/) are looked up
+relative to "g_MadEditAppDir", which is the directory of the executable.
+
+On Linux the executable path used to be resolved from argv[0]: for a
+relative argv[0] (for example "./madedit") wxPathList::FindAbsoluteValidPath()
+was used, and that function searches $PATH *before* the current directory.
+Running the binary from an extracted folder could therefore pick up a
+completely different MadEdit installation that happens to be earlier in
+$PATH, and every data file would be looked up in the wrong directory --
+the translations would disappear and the syntax highlighting would come
+from the other installation.
+
+The executable path is now taken from wxStandardPaths (which uses
+/proc/self/exe on Linux), see GetExecutablePath() in src/MadUtils.cpp.
+
+Static linking of wxWidgets
+---------------------------
+The Linux release links wxWidgets statically so that users do not have to
+install wxWidgets 3.3 themselves (distribution packages usually only ship
+3.2).  Static linking changes the order in which the global constructors
+run, and this matters for wxWidgets internals: constructing a wxFont during
+static initialization queries the list of the installed fonts, which needs
+wxTopLevelWindows -- and that global is not initialized yet at that point.
+The program would crash before showing any window.
+
+MadEdit::ms_RulerFont used to be a global wxFont, which triggered exactly
+that.  It is now created on first use instead (MadEdit::GetRulerFont() in
+src/MadEdit/MadEdit.cpp), so nothing in MadEdit touches wxWidgets internals
+during static initialization any more.
 

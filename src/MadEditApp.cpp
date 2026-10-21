@@ -352,6 +352,18 @@ bool MadEditApp::OnInit()
 		}
 	}
 #endif
+	// 翻譯檔（message catalog）的搜尋路徑由 ScanForLocales()/InitLocale() 負責：
+	// 它會把「<資料目錄>/locale/」交給 wxLocale::AddCatalogLookupPathPrefix()，
+	// wxWidgets 3.3 會在該目錄下尋找 <語言>/LC_MESSAGES/madedit-mod.mo。
+	//
+	// 這裡刻意不呼叫 wxStandardPaths::SetInstallPrefix()：
+	//   * wxWidgets 只有在 Linux (wxHAS_STDPATHS_INSTALL_PREFIX) 才提供該方法，
+	//     macOS 版沒有，呼叫它會讓 macOS 編譯失敗。
+	//   * Linux 上 wxWidgets 另外會用「<安裝前綴>/share/locale」找翻譯，
+	//     而安裝前綴是從執行檔路徑裡的 "/bin/" 推算出來的；
+	//     把它設成執行檔所在目錄反而會讓 make install 的標準版面
+	//     (<前綴>/share/locale) 找不到翻譯。
+	// 詳細規則見「How to build MadEdit-Mod.txt」。
 	m_SigleAppChecker = 0;
 	m_AppServer = 0;
 #ifdef __WXMSW__

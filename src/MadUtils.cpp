@@ -223,20 +223,31 @@ wxString GetExecutablePath()
 		// 回傳 Contents/MacOS 底下執行檔的完整路徑。
 		path = wxStandardPaths::Get().GetExecutablePath();
 #else
-		wxString argv0 = wxTheApp->argv[0];
+	// Linux/Unix：優先使用「真正正在執行的檔案」路徑，不要拿 argv[0]
+	// 去 $PATH 裡搜尋。
+	//
+	// 舊的寫法是 argv[0] 是相對路徑時，用 wxPathList::FindAbsoluteValidPath()
+	// 到 $PATH 裡找同名檔案。那個函式會先搜尋 $PATH，而不是目前的工作目錄，
+	// 所以執行 ./madedit 時可能找到 $PATH 裡另一份 MadEdit
+	// （例如 ~/.local/bin/madedit），導致 g_MadEditAppDir 整個指錯，
+	// syntax/、scripts/、locale/ 等資料檔都找不到。
+	//
+	// wxStandardPaths 才是 wxWidgets 3.x 的跨平台做法：Linux 上會讀
+	// /proc/self/exe 取得實際路徑。argv[0] 本身是絕對路徑時則沿用它。
+	wxString argv0 = wxTheApp->argv[0];
 
-		if (wxIsAbsolutePath(argv0)) {
+	if (wxIsAbsolutePath(argv0)) {
+		path = argv0;
+	}
+	else {
+		path = wxStandardPaths::Get().GetExecutablePath();
+		if (path.IsEmpty())
 			path = argv0;
-		}
-		else {
-			wxPathList pathlist;
-			pathlist.AddEnvList(wxT("PATH"));
-			path = pathlist.FindAbsoluteValidPath(argv0);
-		}
+	}
 
-		wxFileName filename(path);
-		filename.Normalize();
-		path = filename.GetFullPath();
+	wxFileName filename(path);
+	filename.Normalize();
+	path = filename.GetFullPath();
 #endif
 		found =	true;
 	}

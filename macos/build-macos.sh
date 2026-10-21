@@ -130,6 +130,17 @@ cp -R "$SRC_DIR/Dictionaries" "$CONTENTS/Resources/Dictionaries"
 
 # 語系檔：po/<lang>.gmo -> Resources/locale/<lang>/LC_MESSAGES/madedit-mod.mo
 #
+# 位置是 Resources/locale/：MadEdit 會把這個目錄交給
+# wxLocale::AddCatalogLookupPathPrefix()（見 src/MadEditApp.cpp 的
+# ScanForLocales()/InitLocale()），wxWidgets 3.3 會在底下尋找
+# <語言>/LC_MESSAGES/madedit-mod.mo。
+#
+# 注意不要改成 Resources/share/locale/：wxWidgets 只有在 Linux
+# (wxHAS_STDPATHS_INSTALL_PREFIX) 才會去搜尋「<安裝前綴>/share/locale」，
+# macOS 版根本沒有 SetInstallPrefix() 這個 API，
+# 放那裡 wxWidgets 不會去讀，介面會只有一半是翻譯的。
+# 詳細規則見「How to build MadEdit-Mod.txt」。
+#
 # out-of-tree 建置時 gettext 的 Makefile 會因為 VPATH 在 source 目錄找到
 # 既有的 .gmo 而判定「不需要重編」，所以在這裡明確用 msgfmt 重新產生，
 # 確保翻譯內容跟 .po 一致。

@@ -94,7 +94,14 @@ extern bool FromCmdToString(wxString &cmdStr, long madCmd);
 MadKeyBindings MadEdit::ms_KeyBindings;
 wxColor MadEdit::ms_RulerColor = wxColor(0xF0F0F0);
 wxColor MadEdit::ms_GradationColor = *wxBLACK;
-wxFont MadEdit::ms_RulerFont = wxFont(MADEDIT_RULER_FONT_SIZE, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_MEDIUM);
+
+// 函式內的靜態變數會在第一次使用時才建構，因此不會發生在全域靜態
+// 初始化階段（那時 GTK 還沒初始化，字型清單也還不能安全地查詢）。
+wxFont& MadEdit::GetRulerFont()
+{
+	static wxFont font(MADEDIT_RULER_FONT_SIZE, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_MEDIUM);
+	return font;
+}
 
 const int HexModeMaxColumns = 78;
 extern const ucs4_t HexHeader[78] =
@@ -11105,7 +11112,7 @@ void MadEdit::DrawRuler(wxMemoryDC& memdc)
 {
 	if (m_RulerHeight < MADEDIT_RULER_HEIGHT)
 		return
-	memdc.SetFont(ms_RulerFont);
+	memdc.SetFont(GetRulerFont());
 	static int rHeight = memdc.GetCharHeight() + MADEDIT_RULER_MARGIN + MADEDIT_RULER_CURSOR_SIZE / 2;
 	if (rHeight != m_RulerHeight && rHeight > MADEDIT_RULER_HEIGHT)
 	{

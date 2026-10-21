@@ -2876,7 +2876,7 @@ MadEditFrame::MadEditFrame(wxWindow *parent, wxWindowID id, const wxString &titl
 	CreateGUIControls();
 	MadEdit::ms_RulerColor = g_StatusBar->GetBackgroundColour();
 	MadEdit::ms_GradationColor = g_StatusBar->GetForegroundColour();
-	MadEdit::ms_RulerFont = g_StatusBar->GetFont();
+	MadEdit::GetRulerFont() = g_StatusBar->GetFont();
 
 	//g_PrintData = new wxPrintData;
 	g_PageSetupData = new wxPageSetupDialogData;
