@@ -1207,7 +1207,8 @@ void MadOptionsDialog::LoadOptions(void)
 	if (index == wxNOT_FOUND) index = 0;
 	ComboBoxNewDocSyntax->SetSelection(index);
 
-	m_NewDocEncoding = _("System Default");
+	// 新文件的編碼預設為 UTF-8，使用者仍可自己選回 System Default。
+	m_NewDocEncoding = wxT("UTF-8");
 	cfg->Read(wxT("NewDocumentEncoding"), &m_NewDocEncoding);
 	wxFontEncoding enc = wxFontMapper::GetEncodingFromName(m_NewDocEncoding);
 	index = ComboBoxNewDocEncOther->FindString(m_NewDocEncoding);

@@ -12284,7 +12284,8 @@ void MadEdit::ConfigNewDocument()
 {
 	long ll;
 	bool bb;
-	wxString enc(wxT("System Default")), ss = wxGetTranslation(wxT("Plain Text"));
+	// 新文件的編碼預設為 UTF-8，而不是「跟著系統編碼」（在繁體中文的系統上會是 Big5）
+	wxString enc(wxT("UTF-8")), ss = wxGetTranslation(wxT("Plain Text"));
 	wxString oldpath = m_Config->GetPath();
 	m_Config->SetPath(wxT("/MadEdit"));
 	m_Config->Read(wxT("NewDocumentLineEnding"), &ll, nltDefault);
