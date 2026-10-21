@@ -109,7 +109,21 @@ itself.
 
 Building on macOS
 =================
-The autotools build is used on macOS as well:
+The easiest way is the helper script, which builds the program and assembles
+a double clickable MadEdit.app:
+
+    sh macos/build-macos.sh
+
+It installs nothing by itself; it expects the dependencies below to be
+present, and it puts the build tree in /opt/local/madedit-build (or in
+~/local/madedit-build when /opt/local is not writable).  Options:
+
+    sh macos/build-macos.sh --build-dir=PATH   use another build directory
+    sh macos/build-macos.sh --prefix=PATH      installation prefix
+    sh macos/build-macos.sh --relocatable      bundle the dylibs into the .app
+    sh macos/build-macos.sh --debug            build with debug info
+
+The plain autotools build works as well:
 
     sh ./autogen.sh
     ./configure
@@ -119,6 +133,34 @@ Requirements:
   * wxWidgets 3.3 or later, built for macOS (the Cocoa port)
   * Boost headers (Boost.Xpressive and Boost.Python headers)
   * Xcode command line tools
+  * GNU gettext, for the translations
+
+With Homebrew:
+
+    brew install wxwidgets boost gettext
+
+The .app bundle
+---------------
+macos/build-macos.sh produces MadEdit.app with this layout:
+
+    MadEdit.app/Contents/MacOS/MadEdit              the executable
+    MadEdit.app/Contents/Resources/syntax/          syntax highlighting
+    MadEdit.app/Contents/Resources/scripts/         MadPython macros
+    MadEdit.app/Contents/Resources/Dictionaries/    hunspell dictionaries
+    MadEdit.app/Contents/Resources/locale/          translations
+    MadEdit.app/Contents/Resources/MadEdit.icns     the icon
+    MadEdit.app/Contents/Info.plist
+
+The executable looks for its data files in the directory it lives in, so on
+macOS the program redirects that lookup to Contents/Resources when it detects
+that it is running from a bundle.  Drag the whole MadEdit.app into the
+Applications folder and it is ready to use.
+
+By default the executable links against the wxWidgets and gettext libraries
+in Homebrew, so the .app only runs on a machine that has the same libraries
+installed.  Use --relocatable to copy the libraries into
+MadEdit.app/Contents/Frameworks and rewrite the load paths, which makes the
+bundle self contained.
 
 Notes:
   * macOS uses the wxWidgets Cocoa port, so neither GTK+ nor X11 is
@@ -134,3 +176,22 @@ Notes:
   * The bundled astyle 3.5.1 requires C++17, so the C++ compiler must be
     invoked with -std=c++17 or newer (clang defaults to gnu++17 since
     Xcode 15).
+  * minipython ships its own pyconfig.h.  It selects a header by platform
+    and macOS is handled by minipython/Include/pyconfig-macos.h, because
+    macOS does not define __unix__.
+  * The single instance mechanism uses a unix socket in /tmp.  The name
+    contains the user name so that two users on the same machine do not
+    remove each other's socket.  When the socket cannot be created the
+    program falls back to running as a second instance instead of exiting
+    silently.
+  * The executable is ad-hoc signed by the build script.  Apple Silicon
+    refuses to start unsigned executables.
+
+wxWidgets 3.3 notes
+===================
+wxWidgets 3.3 changed wxAuiNotebook::AddPage(): the page has to be created
+with the notebook as its parent, otherwise AddPage() fails and no page is
+ever shown.  MadEdit creates its editor pages with the frame as the parent
+(wx 2.8 reparented them automatically), so the parent was changed to the
+notebook in src/MadEditFrame.cpp.
+
